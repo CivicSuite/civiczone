@@ -22,6 +22,7 @@ dependencies = [
 dev = [
   "build>=1.2.0,<2.0.0",
   "httpx>=0.27.0,<1.0.0",
+  "psycopg2-binary>=2.9.0,<3.0.0",
   "pytest>=8.0.0,<9.0.0",
   "ruff>=0.11.0",
 ]
@@ -31,10 +32,12 @@ testpaths = ["tests"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["civiczone"]
+force-include = { "civiczone/migrations/alembic.ini" = "civiczone/migrations/alembic.ini" }
 
 [tool.hatch.build.targets.sdist]
 include = [
   "civiczone",
+  "civiczone/migrations/alembic.ini",
   "scripts",
   "tests",
   "README.md",

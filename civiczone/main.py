@@ -20,12 +20,12 @@ def root() -> dict[str, str]:
     return {
         "name": "CivicZone",
         "version": __version__,
-        "status": "runtime foundation",
+        "status": "schema foundation",
         "message": (
-            "CivicZone package and API foundation are online; parcel lookup, GIS ingestion, "
+            "CivicZone package, API foundation, canonical schema, and Alembic migrations are online; parcel lookup, GIS ingestion, "
             "zoning answers, and planner review workflows are not implemented yet."
         ),
-        "next_step": "Milestone 2: canonical zoning schema and migrations",
+        "next_step": "Milestone 3: parcel and zone lookup",
     }
 
 
