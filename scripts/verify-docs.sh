@@ -32,10 +32,12 @@ required=(
   "civiczone/rule_lookup.py"
   "civiczone/qa.py"
   "civiczone/staff_context.py"
+  "civiczone/public_ui.py"
   "civiczone/migrations/alembic.ini"
   "civiczone/migrations/env.py"
   "civiczone/migrations/guards.py"
   "civiczone/migrations/versions/civiczone_0001_schema.py"
+  "MILESTONE_7_DONE.md"
 )
 
 echo "==> Required-artifact check"

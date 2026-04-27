@@ -2,10 +2,12 @@
 
 from civiccore import __version__ as CIVICCORE_VERSION
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 from civiczone import __version__
 from civiczone.parcel_lookup import ParcelLookupError, lookup_parcel
+from civiczone.public_ui import render_public_lookup_page
 from civiczone.qa import answer_zoning_question
 from civiczone.rule_lookup import RuleLookupError, lookup_dimensional_rule, lookup_use_rule
 from civiczone.staff_context import classify_for_planner_review, get_staff_precedent
@@ -25,13 +27,13 @@ def root() -> dict[str, str]:
     return {
         "name": "CivicZone",
         "version": __version__,
-        "status": "planner escalation foundation",
+        "status": "public UI foundation",
         "message": (
             "CivicZone package, API foundation, canonical schema, Alembic migrations, and "
-            "sample parcel lookup, use-rule lookup, dimensional prechecks, citation-grounded sample Q&A, and planner escalation are online; live GIS ingestion and "
-            "planner review workflows are not implemented yet."
+            "sample parcel lookup, use-rule lookup, dimensional prechecks, citation-grounded sample Q&A, planner escalation, and an accessible public sample UI are online; "
+            "live GIS ingestion and planner review workflows are not implemented yet."
         ),
-        "next_step": "Milestone 7: public UI and accessibility",
+        "next_step": "Milestone 8: v0.1.0 release",
     }
 
 
@@ -45,6 +47,13 @@ def health() -> dict[str, str]:
         "version": __version__,
         "civiccore_version": CIVICCORE_VERSION,
     }
+
+
+@app.get("/civiczone", response_class=HTMLResponse)
+def public_civiczone_page() -> str:
+    """Return the accessible public sample UI."""
+
+    return render_public_lookup_page()
 
 
 class ParcelLookupRequest(BaseModel):
