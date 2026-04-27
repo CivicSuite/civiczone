@@ -173,7 +173,7 @@ def render_public_lookup_page() -> str:
   <p class="lede">CivicZone's public UI foundation demonstrates the resident experience: enter a parcel, see zone context, read source-backed rules, and know when a planner needs to review the question.</p>
   <div class="banner" aria-label="Current product state">
     <div>
-      <span class="badge">v0.1.0.dev0 public UI foundation</span>
+      <span class="badge">v0.1.0 public UI foundation</span>
       <p><strong>Shipped in this development build:</strong> accessible sample page, sample parcel lookup, sample use and dimensional rule cards, citation-grounded Q&amp;A, and planner-escalation guidance.</p>
     </div>
     <a href="/docs" aria-label="Open API documentation">API docs</a>

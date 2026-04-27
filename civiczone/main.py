@@ -33,7 +33,7 @@ def root() -> dict[str, str]:
             "sample parcel lookup, use-rule lookup, dimensional prechecks, citation-grounded sample Q&A, planner escalation, and an accessible public sample UI are online; "
             "live GIS ingestion and planner review workflows are not implemented yet."
         ),
-        "next_step": "Milestone 8: v0.1.0 release",
+        "next_step": "Post-v0.1.0 roadmap: live GIS ingestion, production data wiring, authentication/RBAC, and planner review workflows",
     }
 
 
