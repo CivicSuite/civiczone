@@ -2,7 +2,7 @@
 
 CivicZone is the planned CivicSuite module for parcel-aware zoning and land-use Q&A.
 
-Current state: **v0.1.0.dev0 schema foundation in development**. This repo currently ships a package shell, health/root endpoints, documentation gates, canonical zoning schema models, and Alembic migration scaffold. It does **not** yet answer zoning questions, ingest GIS data, make zoning determinations, or replace planner review.
+Current state: **v0.1.0.dev0 parcel lookup foundation in development**. This repo currently ships a package shell, health/root endpoints, documentation gates, canonical zoning schema models, Alembic migration scaffold, and a sample parcel/zone lookup API. It does **not** yet answer zoning questions, ingest live GIS data, make zoning determinations, or replace planner review.
 
 ## What CivicZone Will Do
 
@@ -35,6 +35,7 @@ bash scripts/verify-release.sh
 
 - `GET /` returns current module status and next milestone.
 - `GET /health` returns package and CivicCore version information.
+- `POST /api/v1/civiczone/parcels/lookup` returns sample parcel zone context for `100-200-300` / `123 Main St`.
 
 ## License
 
