@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 
 from civiczone import __version__
 from civiczone.parcel_lookup import ParcelLookupError, lookup_parcel
+from civiczone.qa import answer_zoning_question
 from civiczone.rule_lookup import RuleLookupError, lookup_dimensional_rule, lookup_use_rule
 
 
@@ -23,13 +24,13 @@ def root() -> dict[str, str]:
     return {
         "name": "CivicZone",
         "version": __version__,
-        "status": "rule lookup foundation",
+        "status": "citation-grounded Q&A foundation",
         "message": (
             "CivicZone package, API foundation, canonical schema, Alembic migrations, and "
-            "sample parcel lookup, use-rule lookup, and dimensional prechecks are online; live GIS ingestion, zoning answers, and "
+            "sample parcel lookup, use-rule lookup, dimensional prechecks, and citation-grounded sample Q&A are online; live GIS ingestion and "
             "planner review workflows are not implemented yet."
         ),
-        "next_step": "Milestone 5: citation-grounded resident Q&A",
+        "next_step": "Milestone 6: planner escalation and staff context",
     }
 
 
@@ -58,6 +59,11 @@ class UseRuleLookupRequest(BaseModel):
 class DimensionalRuleLookupRequest(BaseModel):
     zone_code: str
     rule_type: str
+
+
+class ZoneQuestionRequest(BaseModel):
+    zone_code: str
+    question: str
 
 
 @app.post("/api/v1/civiczone/parcels/lookup")
@@ -111,5 +117,16 @@ def dimensional_rule_lookup(request: DimensionalRuleLookupRequest) -> dict[str, 
         "rule_type": result.rule_type,
         "value": result.value,
         "citation": result.citation,
+        "disclaimer": result.disclaimer,
+    }
+
+
+@app.post("/api/v1/civiczone/questions/answer")
+def zone_question_answer(request: ZoneQuestionRequest) -> dict[str, object]:
+    result = answer_zoning_question(zone_code=request.zone_code, question=request.question)
+    return {
+        "status": result.status,
+        "answer": result.answer,
+        "citations": list(result.citations),
         "disclaimer": result.disclaimer,
     }

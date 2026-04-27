@@ -4,7 +4,7 @@
 
 CivicZone is planned to answer routine parcel-aware zoning questions with citations. It is not a zoning determination tool, not legal advice, and not a replacement for planner review.
 
-Current state: `0.1.0.dev0` rule lookup foundation exists in development. The package, health endpoints, canonical zoning schema, Alembic migrations, sample parcel/zone lookup API, and sample use/dimensional rule APIs exist. Free-form zoning answers, live GIS import, and public workflow screens are not implemented yet.
+Current state: `0.1.0.dev0` citation-grounded Q&A foundation exists in development. The package, health endpoints, canonical zoning schema, Alembic migrations, sample parcel/zone lookup API, sample use/dimensional rule APIs, and citation-grounded sample Q&A exist. Live LLM calls, live GIS import, and public workflow screens are not implemented yet.
 
 ## For IT And Technical Staff
 
@@ -17,6 +17,7 @@ CivicZone is a FastAPI Python package pinned to `civiccore==0.2.0`. The current 
 - `POST /api/v1/civiczone/parcels/lookup` for sample parcel lookup.
 - `POST /api/v1/civiczone/rules/use` for sample use status.
 - `POST /api/v1/civiczone/rules/dimensional` for sample dimensional rules.
+- `POST /api/v1/civiczone/questions/answer` for citation-grounded sample questions.
 
 Run local verification with:
 
