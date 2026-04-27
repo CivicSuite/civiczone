@@ -11,3 +11,4 @@ The format follows Keep a Changelog, and this project follows Semantic Versionin
 - Milestone 0 professional scaffold and reconciliation documents.
 - Milestone 1 runtime foundation with package shell, root endpoint, health endpoint, tests, and release/documentation gates.
 - Milestone 2 canonical zoning schema with SQLAlchemy models, Alembic scaffold, real pgvector migration test, and schema documentation.
+- Milestone 3 sample parcel/zone lookup API with actionable unknown-parcel errors and zoning-determination disclaimer.

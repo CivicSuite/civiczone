@@ -28,6 +28,7 @@ required=(
   "civiczone/__init__.py"
   "civiczone/main.py"
   "civiczone/models.py"
+  "civiczone/parcel_lookup.py"
   "civiczone/migrations/alembic.ini"
   "civiczone/migrations/env.py"
   "civiczone/migrations/guards.py"
