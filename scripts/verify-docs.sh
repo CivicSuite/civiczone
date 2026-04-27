@@ -38,6 +38,7 @@ required=(
   "civiczone/migrations/guards.py"
   "civiczone/migrations/versions/civiczone_0001_schema.py"
   "MILESTONE_7_DONE.md"
+  "MILESTONE_8_DONE.md"
 )
 
 echo "==> Required-artifact check"

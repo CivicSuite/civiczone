@@ -4,7 +4,7 @@ All notable changes to CivicZone will be documented in this file.
 
 The format follows Keep a Changelog, and this project follows Semantic Versioning.
 
-## [0.1.0.dev0] - 2026-04-27
+## [0.1.0] - 2026-04-27
 
 ### Added
 
@@ -16,3 +16,4 @@ The format follows Keep a Changelog, and this project follows Semantic Versionin
 - Milestone 5 citation-grounded sample resident Q&A with escalation/refusal for determination or uncited questions.
 - Milestone 6 planner-escalation classifier and staff-only precedent context sample, with leakage guard tests.
 - Milestone 7 accessible public sample UI at `/civiczone`, with parcel context, cited rule cards, planner-escalation guidance, and browser QA evidence.
+- Milestone 8 v0.1.0 release packaging, version synchronization, and GitHub release artifacts.
