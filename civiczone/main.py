@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 
 from civiczone import __version__
 from civiczone.parcel_lookup import ParcelLookupError, lookup_parcel
+from civiczone.rule_lookup import RuleLookupError, lookup_dimensional_rule, lookup_use_rule
 
 
 app = FastAPI(
@@ -22,13 +23,13 @@ def root() -> dict[str, str]:
     return {
         "name": "CivicZone",
         "version": __version__,
-        "status": "parcel lookup foundation",
+        "status": "rule lookup foundation",
         "message": (
             "CivicZone package, API foundation, canonical schema, Alembic migrations, and "
-            "sample parcel lookup are online; live GIS ingestion, zoning answers, and "
+            "sample parcel lookup, use-rule lookup, and dimensional prechecks are online; live GIS ingestion, zoning answers, and "
             "planner review workflows are not implemented yet."
         ),
-        "next_step": "Milestone 4: use and dimensional rules",
+        "next_step": "Milestone 5: citation-grounded resident Q&A",
     }
 
 
@@ -47,6 +48,16 @@ def health() -> dict[str, str]:
 class ParcelLookupRequest(BaseModel):
     parcel_number: str | None = Field(default=None)
     address: str | None = Field(default=None)
+
+
+class UseRuleLookupRequest(BaseModel):
+    zone_code: str
+    use: str
+
+
+class DimensionalRuleLookupRequest(BaseModel):
+    zone_code: str
+    rule_type: str
 
 
 @app.post("/api/v1/civiczone/parcels/lookup")
@@ -71,5 +82,34 @@ def parcel_lookup(request: ParcelLookupRequest) -> dict[str, object]:
         "overlays": list(result.overlays),
         "constraints": list(result.constraints),
         "source": result.source,
+        "disclaimer": result.disclaimer,
+    }
+
+
+@app.post("/api/v1/civiczone/rules/use")
+def use_rule_lookup(request: UseRuleLookupRequest) -> dict[str, str]:
+    result = lookup_use_rule(zone_code=request.zone_code, use=request.use)
+    if isinstance(result, RuleLookupError):
+        raise HTTPException(status_code=404, detail={"message": result.message, "fix": result.fix})
+    return {
+        "zone_code": result.zone_code,
+        "use": result.use,
+        "status": result.status,
+        "review_path": result.review_path,
+        "citation": result.citation,
+        "disclaimer": result.disclaimer,
+    }
+
+
+@app.post("/api/v1/civiczone/rules/dimensional")
+def dimensional_rule_lookup(request: DimensionalRuleLookupRequest) -> dict[str, str]:
+    result = lookup_dimensional_rule(zone_code=request.zone_code, rule_type=request.rule_type)
+    if isinstance(result, RuleLookupError):
+        raise HTTPException(status_code=404, detail={"message": result.message, "fix": result.fix})
+    return {
+        "zone_code": result.zone_code,
+        "rule_type": result.rule_type,
+        "value": result.value,
+        "citation": result.citation,
         "disclaimer": result.disclaimer,
     }
