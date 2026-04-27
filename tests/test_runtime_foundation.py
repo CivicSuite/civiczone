@@ -18,9 +18,9 @@ def test_root_endpoint_states_runtime_boundary() -> None:
 
     assert payload["name"] == "CivicZone"
     assert payload["version"] == "0.1.0.dev0"
-    assert payload["status"] == "parcel lookup foundation"
+    assert payload["status"] == "rule lookup foundation"
     assert "not implemented yet" in payload["message"]
-    assert payload["next_step"] == "Milestone 4: use and dimensional rules"
+    assert payload["next_step"] == "Milestone 5: citation-grounded resident Q&A"
 
 
 def test_health_endpoint_reports_versions() -> None:
