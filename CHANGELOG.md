@@ -14,3 +14,4 @@ The format follows Keep a Changelog, and this project follows Semantic Versionin
 - Milestone 3 sample parcel/zone lookup API with actionable unknown-parcel errors and zoning-determination disclaimer.
 - Milestone 4 sample use and dimensional rule APIs with citations, disclaimers, and actionable 404s.
 - Milestone 5 citation-grounded sample resident Q&A with escalation/refusal for determination or uncited questions.
+- Milestone 6 planner-escalation classifier and staff-only precedent context sample, with leakage guard tests.

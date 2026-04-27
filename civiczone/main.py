@@ -8,6 +8,7 @@ from civiczone import __version__
 from civiczone.parcel_lookup import ParcelLookupError, lookup_parcel
 from civiczone.qa import answer_zoning_question
 from civiczone.rule_lookup import RuleLookupError, lookup_dimensional_rule, lookup_use_rule
+from civiczone.staff_context import classify_for_planner_review, get_staff_precedent
 
 
 app = FastAPI(
@@ -24,13 +25,13 @@ def root() -> dict[str, str]:
     return {
         "name": "CivicZone",
         "version": __version__,
-        "status": "citation-grounded Q&A foundation",
+        "status": "planner escalation foundation",
         "message": (
             "CivicZone package, API foundation, canonical schema, Alembic migrations, and "
-            "sample parcel lookup, use-rule lookup, dimensional prechecks, and citation-grounded sample Q&A are online; live GIS ingestion and "
+            "sample parcel lookup, use-rule lookup, dimensional prechecks, citation-grounded sample Q&A, and planner escalation are online; live GIS ingestion and "
             "planner review workflows are not implemented yet."
         ),
-        "next_step": "Milestone 6: planner escalation and staff context",
+        "next_step": "Milestone 7: public UI and accessibility",
     }
 
 
@@ -63,6 +64,10 @@ class DimensionalRuleLookupRequest(BaseModel):
 
 class ZoneQuestionRequest(BaseModel):
     zone_code: str
+    question: str
+
+
+class PlannerReviewRequest(BaseModel):
     question: str
 
 
@@ -129,4 +134,25 @@ def zone_question_answer(request: ZoneQuestionRequest) -> dict[str, object]:
         "answer": result.answer,
         "citations": list(result.citations),
         "disclaimer": result.disclaimer,
+    }
+
+
+@app.post("/api/v1/civiczone/planner-review/classify")
+def planner_review_classify(request: PlannerReviewRequest) -> dict[str, str]:
+    result = classify_for_planner_review(request.question)
+    return {"status": result.status, "reason": result.reason, "next_step": result.next_step}
+
+
+@app.get("/api/v1/civiczone/staff/precedents/{precedent_id}")
+def staff_precedent(precedent_id: str) -> dict[str, str]:
+    precedent = get_staff_precedent(precedent_id)
+    if precedent is None:
+        raise HTTPException(
+            status_code=404,
+            detail={"message": "Staff precedent not found.", "fix": "Try precedent_id 'historic-adu'."},
+        )
+    return {
+        "title": precedent.title,
+        "summary": precedent.summary,
+        "visibility": precedent.visibility,
     }
