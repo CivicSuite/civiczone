@@ -207,7 +207,7 @@ def render_public_lookup_page() -> str:
       <div class="result">
         <h3>Conditional use review</h3>
         <p>In sample zone R-2, an accessory dwelling unit is shown as conditionally allowed.</p>
-        <p><strong>Citation:</strong> Sample Zoning Code § 18.20.040.</p>
+        <p><strong>Citation:</strong> Sample Zoning Code &sect; 18.20.040.</p>
       </div>
     </article>
 
@@ -217,7 +217,7 @@ def render_public_lookup_page() -> str:
       <div class="result">
         <h3>20 feet</h3>
         <p>Sample R-2 dimensional standards show a 20-foot front setback.</p>
-        <p><strong>Citation:</strong> Sample Zoning Code § 18.20.060.</p>
+        <p><strong>Citation:</strong> Sample Zoning Code &sect; 18.20.060.</p>
       </div>
     </article>
 
@@ -227,7 +227,7 @@ def render_public_lookup_page() -> str:
       <div class="result">
         <p><strong>Question:</strong> Can I build an ADU?</p>
         <p><strong>Answer:</strong> The sample code indicates ADUs require conditional use review in R-2. Contact planning staff before applying.</p>
-        <p><strong>Citation:</strong> Sample Zoning Code § 18.20.040.</p>
+        <p><strong>Citation:</strong> Sample Zoning Code &sect; 18.20.040.</p>
       </div>
     </article>
 

@@ -29,6 +29,7 @@ def test_public_ui_shows_sample_outputs_and_citations() -> None:
     assert "R-2 Residential District" in text
     assert "Historic District Overlay" in text
     assert "Sample Zoning Code" in text
+    assert "Â§" not in text
     assert "Conditional use review" in text
     assert "20-foot front setback" in text
 
