@@ -31,6 +31,7 @@ required=(
   "civiczone/parcel_lookup.py"
   "civiczone/rule_lookup.py"
   "civiczone/qa.py"
+  "civiczone/staff_context.py"
   "civiczone/migrations/alembic.ini"
   "civiczone/migrations/env.py"
   "civiczone/migrations/guards.py"
