@@ -2,7 +2,7 @@
 
 CivicZone is the planned CivicSuite module for parcel-aware zoning and land-use Q&A.
 
-Current state: **v0.1.0.dev0 runtime foundation in development**. This repo currently ships a package shell, health/root endpoints, documentation gates, and milestone plan. It does **not** yet answer zoning questions, ingest GIS data, make zoning determinations, or replace planner review.
+Current state: **v0.1.0.dev0 schema foundation in development**. This repo currently ships a package shell, health/root endpoints, documentation gates, canonical zoning schema models, and Alembic migration scaffold. It does **not** yet answer zoning questions, ingest GIS data, make zoning determinations, or replace planner review.
 
 ## What CivicZone Will Do
 

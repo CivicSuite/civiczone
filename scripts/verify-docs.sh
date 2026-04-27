@@ -27,6 +27,11 @@ required=(
   "pyproject.toml"
   "civiczone/__init__.py"
   "civiczone/main.py"
+  "civiczone/models.py"
+  "civiczone/migrations/alembic.ini"
+  "civiczone/migrations/env.py"
+  "civiczone/migrations/guards.py"
+  "civiczone/migrations/versions/civiczone_0001_schema.py"
 )
 
 echo "==> Required-artifact check"
