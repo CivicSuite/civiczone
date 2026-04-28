@@ -4,6 +4,13 @@ All notable changes to CivicZone will be documented in this file.
 
 The format follows Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.1.1] - 2026-04-28
+
+### Changed
+
+- Aligned CivicZone to `civiccore==0.3.0` while preserving the v0.1 public UI foundation behavior.
+- Updated version surfaces, release gate, CI CivicCore wheel install, documentation, and health-contract tests for the v0.1.1 dependency-alignment release.
+
 ## [0.1.0] - 2026-04-27
 
 ### Added
