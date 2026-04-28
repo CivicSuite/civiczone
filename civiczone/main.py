@@ -1,15 +1,17 @@
 """FastAPI runtime foundation for CivicZone."""
 
+import os
+
 from civiccore import __version__ as CIVICCORE_VERSION
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 from civiczone import __version__
-from civiczone.parcel_lookup import ParcelLookupError, lookup_parcel
+from civiczone.parcel_lookup import ParcelLookupError, ParcelLookupRepository, lookup_parcel
 from civiczone.public_ui import render_public_lookup_page
 from civiczone.qa import answer_zoning_question
-from civiczone.rule_lookup import RuleLookupError, lookup_dimensional_rule, lookup_use_rule
+from civiczone.rule_lookup import RuleLookupError, RuleLookupRepository, lookup_dimensional_rule, lookup_use_rule
 from civiczone.staff_context import classify_for_planner_review, get_staff_precedent
 
 
@@ -19,6 +21,10 @@ app = FastAPI(
     description="Parcel-aware zoning and land-use Q&A foundation for CivicSuite.",
 )
 
+_parcel_lookup_repository: ParcelLookupRepository | None = None
+_rule_lookup_repository: RuleLookupRepository | None = None
+_parcel_rule_db_url: str | None = None
+
 
 @app.get("/")
 def root() -> dict[str, str]:
@@ -27,10 +33,11 @@ def root() -> dict[str, str]:
     return {
         "name": "CivicZone",
         "version": __version__,
-        "status": "public UI foundation",
+        "status": "public UI foundation plus parcel/rule persistence",
         "message": (
-            "CivicZone package, API foundation, canonical schema, Alembic migrations, and "
-            "sample parcel lookup, use-rule lookup, dimensional prechecks, citation-grounded sample Q&A, planner escalation, and an accessible public sample UI are online; "
+            "CivicZone package, API foundation, canonical schema, Alembic migrations, "
+            "sample parcel lookup, use-rule lookup, dimensional prechecks, optional database-backed parcel/rule lookup records, "
+            "citation-grounded sample Q&A, planner escalation, and an accessible public sample UI are online; "
             "live GIS ingestion and planner review workflows are not implemented yet."
         ),
         "next_step": "Post-v0.1.1 roadmap: live GIS ingestion, production data wiring, authentication/RBAC, and planner review workflows",
@@ -91,7 +98,7 @@ def parcel_lookup(request: ParcelLookupRequest) -> dict[str, object]:
             },
         )
 
-    result = lookup_parcel(parcel_number=request.parcel_number, address=request.address)
+    result = _lookup_parcel(parcel_number=request.parcel_number, address=request.address)
     if isinstance(result, ParcelLookupError):
         raise HTTPException(status_code=404, detail={"message": result.message, "fix": result.fix})
 
@@ -108,7 +115,7 @@ def parcel_lookup(request: ParcelLookupRequest) -> dict[str, object]:
 
 @app.post("/api/v1/civiczone/rules/use")
 def use_rule_lookup(request: UseRuleLookupRequest) -> dict[str, str]:
-    result = lookup_use_rule(zone_code=request.zone_code, use=request.use)
+    result = _lookup_use_rule(zone_code=request.zone_code, use=request.use)
     if isinstance(result, RuleLookupError):
         raise HTTPException(status_code=404, detail={"message": result.message, "fix": result.fix})
     return {
@@ -123,7 +130,7 @@ def use_rule_lookup(request: UseRuleLookupRequest) -> dict[str, str]:
 
 @app.post("/api/v1/civiczone/rules/dimensional")
 def dimensional_rule_lookup(request: DimensionalRuleLookupRequest) -> dict[str, str]:
-    result = lookup_dimensional_rule(zone_code=request.zone_code, rule_type=request.rule_type)
+    result = _lookup_dimensional_rule(zone_code=request.zone_code, rule_type=request.rule_type)
     if isinstance(result, RuleLookupError):
         raise HTTPException(status_code=404, detail={"message": result.message, "fix": result.fix})
     return {
@@ -165,3 +172,59 @@ def staff_precedent(precedent_id: str) -> dict[str, str]:
         "summary": precedent.summary,
         "visibility": precedent.visibility,
     }
+
+
+def _parcel_rule_database_url() -> str | None:
+    return os.environ.get("CIVICZONE_PARCEL_RULE_DB_URL")
+
+
+def _get_parcel_repository() -> ParcelLookupRepository:
+    global _parcel_lookup_repository, _parcel_rule_db_url, _rule_lookup_repository
+    db_url = _parcel_rule_database_url()
+    if db_url is None:
+        raise RuntimeError("CIVICZONE_PARCEL_RULE_DB_URL is not configured.")
+    if _parcel_lookup_repository is None or db_url != _parcel_rule_db_url:
+        _dispose_repository(_parcel_lookup_repository)
+        _dispose_repository(_rule_lookup_repository)
+        _parcel_rule_db_url = db_url
+        _parcel_lookup_repository = ParcelLookupRepository(db_url=db_url)
+        _rule_lookup_repository = None
+    return _parcel_lookup_repository
+
+
+def _get_rule_repository() -> RuleLookupRepository:
+    global _parcel_lookup_repository, _parcel_rule_db_url, _rule_lookup_repository
+    db_url = _parcel_rule_database_url()
+    if db_url is None:
+        raise RuntimeError("CIVICZONE_PARCEL_RULE_DB_URL is not configured.")
+    if _rule_lookup_repository is None or db_url != _parcel_rule_db_url:
+        _dispose_repository(_rule_lookup_repository)
+        _dispose_repository(_parcel_lookup_repository)
+        _parcel_rule_db_url = db_url
+        _rule_lookup_repository = RuleLookupRepository(db_url=db_url)
+        _parcel_lookup_repository = None
+    return _rule_lookup_repository
+
+
+def _lookup_parcel(*, parcel_number: str | None = None, address: str | None = None):
+    if _parcel_rule_database_url() is None:
+        return lookup_parcel(parcel_number=parcel_number, address=address)
+    return _get_parcel_repository().lookup(parcel_number=parcel_number, address=address)
+
+
+def _lookup_use_rule(*, zone_code: str, use: str):
+    if _parcel_rule_database_url() is None:
+        return lookup_use_rule(zone_code=zone_code, use=use)
+    return _get_rule_repository().lookup_use_rule(zone_code=zone_code, use=use)
+
+
+def _lookup_dimensional_rule(*, zone_code: str, rule_type: str):
+    if _parcel_rule_database_url() is None:
+        return lookup_dimensional_rule(zone_code=zone_code, rule_type=rule_type)
+    return _get_rule_repository().lookup_dimensional_rule(zone_code=zone_code, rule_type=rule_type)
+
+
+def _dispose_repository(repository: object | None) -> None:
+    engine = getattr(repository, "engine", None)
+    if engine is not None:
+        engine.dispose()

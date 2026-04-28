@@ -2,7 +2,7 @@
 
 CivicZone is the planned CivicSuite module for parcel-aware zoning and land-use Q&A.
 
-Current state: **v0.1.1 public UI foundation release**. This repo ships a package shell, health/root endpoints, documentation gates, canonical zoning schema models, Alembic migration scaffold, sample parcel/zone lookup API, sample use/dimensional rule APIs, citation-grounded sample Q&A, planner-escalation/staff-context samples, an accessible public sample UI at `/civiczone`, and `civiccore==0.3.0` dependency alignment. It does **not** yet use live LLM calls, ingest live GIS data, make zoning determinations, or replace planner review.
+Current state: **v0.1.1 public UI foundation release plus production-depth parcel/rule persistence slice**. This repo ships a package shell, health/root endpoints, documentation gates, canonical zoning schema models, Alembic migration scaffold, sample parcel/zone lookup API, sample use/dimensional rule APIs, optional database-backed parcel/rule lookup records via `CIVICZONE_PARCEL_RULE_DB_URL`, citation-grounded sample Q&A, planner-escalation/staff-context samples, an accessible public sample UI at `/civiczone`, and `civiccore==0.3.0` dependency alignment. It does **not** yet use live LLM calls, ingest live GIS data, make zoning determinations, or replace planner review.
 
 ## What CivicZone Will Do
 
@@ -14,8 +14,8 @@ Current state: **v0.1.1 public UI foundation release**. This repo ships a packag
 
 ## What Is Not Shipped Yet
 
-- Parcel lookup runtime.
-- GIS import or Esri integration.
+- Live GIS import or Esri integration.
+- Production GIS/assessor synchronization.
 - Zoning Q&A.
 - Planner review queue.
 - Production resident UI connected to live GIS, authentication, and planner review workflows.
@@ -42,6 +42,8 @@ bash scripts/verify-release.sh
 - `POST /api/v1/civiczone/questions/answer` answers sample resident questions only when citations are available.
 - `POST /api/v1/civiczone/planner-review/classify` identifies sample discretionary-review triggers.
 - `GET /api/v1/civiczone/staff/precedents/{precedent_id}` returns staff-only sample precedent context.
+
+Set `CIVICZONE_PARCEL_RULE_DB_URL` to enable persistent parcel, use-rule, and dimensional-rule lookup records. When unset, CivicZone continues to use deterministic in-memory sample data for local development and documentation examples.
 
 ## License
 
