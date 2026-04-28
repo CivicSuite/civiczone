@@ -1,6 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import UTC, datetime
+from collections.abc import Iterable
+
+import sqlalchemy as sa
+from sqlalchemy import Engine, create_engine
 
 
 @dataclass(frozen=True)
@@ -37,6 +42,92 @@ SAMPLE_PARCELS: dict[str, ParcelLookupResult] = {
 ADDRESS_INDEX = {value.address.casefold(): key for key, value in SAMPLE_PARCELS.items()}
 
 
+metadata = sa.MetaData()
+
+parcel_lookup_records = sa.Table(
+    "parcel_lookup_records",
+    metadata,
+    sa.Column("parcel_number", sa.String(120), primary_key=True),
+    sa.Column("address", sa.String(500), nullable=False),
+    sa.Column("zone_code", sa.String(80), nullable=False),
+    sa.Column("zone_name", sa.String(255), nullable=False),
+    sa.Column("overlays", sa.JSON(), nullable=False),
+    sa.Column("constraints", sa.JSON(), nullable=False),
+    sa.Column("source", sa.Text(), nullable=False),
+    sa.Column("disclaimer", sa.Text(), nullable=False),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+    schema="civiczone",
+)
+
+
+class ParcelLookupRepository:
+    """SQLAlchemy-backed parcel lookup records for local GIS/file-drop slices."""
+
+    def __init__(self, *, db_url: str | None = None, engine: Engine | None = None, seed_defaults: bool = True) -> None:
+        base_engine = engine or create_engine(db_url or "sqlite+pysqlite:///:memory:", future=True)
+        if base_engine.dialect.name == "sqlite":
+            self.engine = base_engine.execution_options(schema_translate_map={"civiczone": None})
+        else:
+            self.engine = base_engine
+            with self.engine.begin() as connection:
+                connection.execute(sa.text("CREATE SCHEMA IF NOT EXISTS civiczone"))
+        metadata.create_all(self.engine)
+        if seed_defaults:
+            self.seed(SAMPLE_PARCELS.values())
+
+    def seed(self, parcels: Iterable[ParcelLookupResult]) -> None:
+        now = datetime.now(UTC)
+        with self.engine.begin() as connection:
+            for parcel in parcels:
+                exists = connection.execute(
+                    sa.select(parcel_lookup_records.c.parcel_number).where(
+                        parcel_lookup_records.c.parcel_number == parcel.parcel_number
+                    )
+                ).first()
+                if exists is not None:
+                    continue
+                connection.execute(
+                    parcel_lookup_records.insert()
+                    .values(
+                        parcel_number=parcel.parcel_number,
+                        address=parcel.address,
+                        zone_code=parcel.zone_code,
+                        zone_name=parcel.zone_name,
+                        overlays=list(parcel.overlays),
+                        constraints=list(parcel.constraints),
+                        source=parcel.source,
+                        disclaimer=parcel.disclaimer,
+                        created_at=now,
+                        updated_at=now,
+                    )
+                )
+
+    def lookup(
+        self, *, parcel_number: str | None = None, address: str | None = None
+    ) -> ParcelLookupResult | ParcelLookupError:
+        with self.engine.begin() as connection:
+            row = None
+            if parcel_number:
+                row = connection.execute(
+                    sa.select(parcel_lookup_records).where(
+                        parcel_lookup_records.c.parcel_number == parcel_number.strip()
+                    )
+                ).mappings().first()
+            if row is None and address:
+                row = connection.execute(
+                    sa.select(parcel_lookup_records).where(
+                        sa.func.lower(parcel_lookup_records.c.address) == address.strip().casefold()
+                    )
+                ).mappings().first()
+        if row is not None:
+            return _row_to_parcel(row)
+        return ParcelLookupError(
+            message="Parcel not found in the CivicZone configured parcel dataset.",
+            fix="Load parcel data into the configured CIVICZONE_PARCEL_RULE_DB_URL store or use the sample parcel '100-200-300'.",
+        )
+
+
 def lookup_parcel(*, parcel_number: str | None = None, address: str | None = None) -> ParcelLookupResult | ParcelLookupError:
     """Return a sample parcel lookup without claiming live GIS integration."""
 
@@ -56,4 +147,18 @@ def lookup_parcel(*, parcel_number: str | None = None, address: str | None = Non
             "Use parcel_number '100-200-300' or address '123 Main St' in this "
             "development build; live GIS import is planned for a later milestone."
         ),
+    )
+
+
+def _row_to_parcel(row: object) -> ParcelLookupResult:
+    data = dict(row)
+    return ParcelLookupResult(
+        parcel_number=data["parcel_number"],
+        address=data["address"],
+        zone_code=data["zone_code"],
+        zone_name=data["zone_name"],
+        overlays=tuple(data["overlays"]),
+        constraints=tuple(data["constraints"]),
+        source=data["source"],
+        disclaimer=data["disclaimer"],
     )

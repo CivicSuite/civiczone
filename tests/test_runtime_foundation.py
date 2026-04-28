@@ -18,7 +18,8 @@ def test_root_endpoint_states_runtime_boundary() -> None:
 
     assert payload["name"] == "CivicZone"
     assert payload["version"] == "0.1.1"
-    assert payload["status"] == "public UI foundation"
+    assert payload["status"] == "public UI foundation plus parcel/rule persistence"
+    assert "database-backed parcel/rule lookup records" in payload["message"]
     assert "not implemented yet" in payload["message"]
     assert payload["next_step"].startswith("Post-v0.1.1 roadmap")
 

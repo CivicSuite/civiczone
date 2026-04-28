@@ -53,6 +53,7 @@ def test_alembic_scaffold_exists_and_uses_separate_version_table() -> None:
         ROOT / "civiczone" / "migrations" / "alembic.ini",
         ROOT / "civiczone" / "migrations" / "env.py",
         ROOT / "civiczone" / "migrations" / "versions" / "civiczone_0001_schema.py",
+        ROOT / "civiczone" / "migrations" / "versions" / "civiczone_0002_parcel_rule_lookup_records.py",
     ]
     for path in expected:
         assert path.exists()
@@ -73,6 +74,23 @@ def test_migration_declares_all_canonical_tables() -> None:
     assert "idempotent_create_table" in migration_text
     for table_name in CANONICAL_TABLES:
         assert f'"{table_name}"' in migration_text
+
+
+def test_parcel_rule_lookup_records_migration_declares_runtime_tables() -> None:
+    migration_text = (
+        ROOT
+        / "civiczone"
+        / "migrations"
+        / "versions"
+        / "civiczone_0002_parcel_rule_lookup_records.py"
+    ).read_text(encoding="utf-8")
+
+    assert 'revision = "civiczone_0002_parcel_rules"' in migration_text
+    assert 'down_revision = "civiczone_0001_schema"' in migration_text
+    assert '"parcel_lookup_records"' in migration_text
+    assert '"use_rule_lookup_records"' in migration_text
+    assert '"dimensional_rule_lookup_records"' in migration_text
+    assert "postgresql.JSONB()" in migration_text
 
 
 def test_alembic_command_upgrades_real_pgvector_database(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -147,7 +165,11 @@ def test_alembic_command_upgrades_real_pgvector_database(monkeypatch: pytest.Mon
             )
 
         assert civiccore_revision == "civiccore_0002_llm"
-        assert civiczone_revision == "civiczone_0001_schema"
-        assert civiczone_tables == set(CANONICAL_TABLES)
+        assert civiczone_revision == "civiczone_0002_parcel_rules"
+        assert civiczone_tables == set(CANONICAL_TABLES) | {
+            "dimensional_rule_lookup_records",
+            "parcel_lookup_records",
+            "use_rule_lookup_records",
+        }
     finally:
         subprocess.run(["docker", "rm", "-f", name], check=False, capture_output=True, text=True)

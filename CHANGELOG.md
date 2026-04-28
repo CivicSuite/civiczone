@@ -4,6 +4,12 @@ All notable changes to CivicZone will be documented in this file.
 
 The format follows Keep a Changelog, and this project follows Semantic Versioning.
 
+## [Unreleased]
+
+### Added
+
+- Production-depth parcel/rule lookup persistence slice with `CIVICZONE_PARCEL_RULE_DB_URL`, seeded sample parcel/use/dimensional records, and Alembic revision `civiczone_0002_parcel_rules`.
+
 ## [0.1.1] - 2026-04-28
 
 ### Changed
