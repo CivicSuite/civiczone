@@ -47,4 +47,5 @@ def test_question_api_success_shape() -> None:
     payload = response.json()
     assert payload["status"] == "answered"
     assert payload["citations"] == ["CMC 18.42.030"]
+    assert payload["ledger_record_id"] is None
     assert "not a zoning determination" in payload["disclaimer"]

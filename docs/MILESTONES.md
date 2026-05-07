@@ -40,6 +40,8 @@ Acceptance criteria:
 - Informational answers cite zoning code sections.
 - No answer claims to be a zoning determination.
 - Uncited answers are refused.
+- Configured database-backed rule data can feed resident answers.
+- Configured resident questions are recorded in a local question ledger.
 
 ## Milestone 6 - Planner Escalation And Staff Context
 

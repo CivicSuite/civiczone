@@ -165,10 +165,11 @@ def test_alembic_command_upgrades_real_pgvector_database(monkeypatch: pytest.Mon
             )
 
         assert civiccore_revision == "civiccore_0002_llm"
-        assert civiczone_revision == "civiczone_0002_parcel_rules"
+        assert civiczone_revision == "civiczone_0003_question_ledger"
         assert civiczone_tables == set(CANONICAL_TABLES) | {
             "dimensional_rule_lookup_records",
             "parcel_lookup_records",
+            "zone_question_ledger_records",
             "use_rule_lookup_records",
         }
     finally:

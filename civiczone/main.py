@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from civiczone import __version__
 from civiczone.parcel_lookup import ParcelLookupError, ParcelLookupRepository, lookup_parcel
 from civiczone.public_ui import render_public_lookup_page
+from civiczone.question_ledger import ZoneQuestionLedgerRepository
 from civiczone.qa import answer_zoning_question
 from civiczone.rule_lookup import RuleLookupError, RuleLookupRepository, lookup_dimensional_rule, lookup_use_rule
 from civiczone.staff_context import classify_for_planner_review, get_staff_precedent
@@ -23,6 +24,7 @@ app = FastAPI(
 
 _parcel_lookup_repository: ParcelLookupRepository | None = None
 _rule_lookup_repository: RuleLookupRepository | None = None
+_question_ledger_repository: ZoneQuestionLedgerRepository | None = None
 _parcel_rule_db_url: str | None = None
 
 
@@ -144,12 +146,23 @@ def dimensional_rule_lookup(request: DimensionalRuleLookupRequest) -> dict[str, 
 
 @app.post("/api/v1/civiczone/questions/answer")
 def zone_question_answer(request: ZoneQuestionRequest) -> dict[str, object]:
-    result = answer_zoning_question(zone_code=request.zone_code, question=request.question)
+    result = answer_zoning_question(
+        zone_code=request.zone_code,
+        question=request.question,
+        use_rule_lookup=_lookup_use_rule,
+        dimensional_rule_lookup=_lookup_dimensional_rule,
+    )
+    ledger_record = _record_zone_question(
+        zone_code=request.zone_code,
+        question=request.question,
+        result=result,
+    )
     return {
         "status": result.status,
         "answer": result.answer,
         "citations": list(result.citations),
         "disclaimer": result.disclaimer,
+        "ledger_record_id": ledger_record.id if ledger_record is not None else None,
     }
 
 
@@ -179,31 +192,39 @@ def _parcel_rule_database_url() -> str | None:
 
 
 def _get_parcel_repository() -> ParcelLookupRepository:
-    global _parcel_lookup_repository, _parcel_rule_db_url, _rule_lookup_repository
+    global _parcel_lookup_repository, _parcel_rule_db_url
     db_url = _parcel_rule_database_url()
     if db_url is None:
         raise RuntimeError("CIVICZONE_PARCEL_RULE_DB_URL is not configured.")
     if _parcel_lookup_repository is None or db_url != _parcel_rule_db_url:
-        _dispose_repository(_parcel_lookup_repository)
-        _dispose_repository(_rule_lookup_repository)
+        _reset_configured_repositories()
         _parcel_rule_db_url = db_url
         _parcel_lookup_repository = ParcelLookupRepository(db_url=db_url)
-        _rule_lookup_repository = None
     return _parcel_lookup_repository
 
 
 def _get_rule_repository() -> RuleLookupRepository:
-    global _parcel_lookup_repository, _parcel_rule_db_url, _rule_lookup_repository
+    global _parcel_rule_db_url, _rule_lookup_repository
     db_url = _parcel_rule_database_url()
     if db_url is None:
         raise RuntimeError("CIVICZONE_PARCEL_RULE_DB_URL is not configured.")
     if _rule_lookup_repository is None or db_url != _parcel_rule_db_url:
-        _dispose_repository(_rule_lookup_repository)
-        _dispose_repository(_parcel_lookup_repository)
+        _reset_configured_repositories()
         _parcel_rule_db_url = db_url
         _rule_lookup_repository = RuleLookupRepository(db_url=db_url)
-        _parcel_lookup_repository = None
     return _rule_lookup_repository
+
+
+def _get_question_ledger_repository() -> ZoneQuestionLedgerRepository:
+    global _parcel_rule_db_url, _question_ledger_repository
+    db_url = _parcel_rule_database_url()
+    if db_url is None:
+        raise RuntimeError("CIVICZONE_PARCEL_RULE_DB_URL is not configured.")
+    if _question_ledger_repository is None or db_url != _parcel_rule_db_url:
+        _reset_configured_repositories()
+        _parcel_rule_db_url = db_url
+        _question_ledger_repository = ZoneQuestionLedgerRepository(db_url=db_url)
+    return _question_ledger_repository
 
 
 def _lookup_parcel(*, parcel_number: str | None = None, address: str | None = None):
@@ -224,7 +245,37 @@ def _lookup_dimensional_rule(*, zone_code: str, rule_type: str):
     return _get_rule_repository().lookup_dimensional_rule(zone_code=zone_code, rule_type=rule_type)
 
 
+def _record_zone_question(*, zone_code: str, question: str, result):
+    if _parcel_rule_database_url() is None:
+        return None
+    escalation_reason = None
+    if result.status == "escalate":
+        escalation_reason = "Planner review required before relying on this answer."
+    elif result.status == "refused":
+        escalation_reason = "No cited zoning answer was available from the configured dataset."
+    return _get_question_ledger_repository().record_answer(
+        zone_code=zone_code,
+        question_text=question,
+        audience="resident",
+        status=result.status,
+        answer_text=result.answer,
+        citations=result.citations,
+        disclaimer=result.disclaimer,
+        escalation_reason=escalation_reason,
+    )
+
+
 def _dispose_repository(repository: object | None) -> None:
     engine = getattr(repository, "engine", None)
     if engine is not None:
         engine.dispose()
+
+
+def _reset_configured_repositories() -> None:
+    global _parcel_lookup_repository, _rule_lookup_repository, _question_ledger_repository
+    _dispose_repository(_parcel_lookup_repository)
+    _dispose_repository(_rule_lookup_repository)
+    _dispose_repository(_question_ledger_repository)
+    _parcel_lookup_repository = None
+    _rule_lookup_repository = None
+    _question_ledger_repository = None

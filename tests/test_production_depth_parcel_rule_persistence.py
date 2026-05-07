@@ -53,6 +53,9 @@ def test_api_uses_configured_parcel_rule_database(monkeypatch, tmp_path) -> None
         if main_module._rule_lookup_repository is not None:
             main_module._rule_lookup_repository.engine.dispose()
             main_module._rule_lookup_repository = None
+        if main_module._question_ledger_repository is not None:
+            main_module._question_ledger_repository.engine.dispose()
+            main_module._question_ledger_repository = None
         main_module._parcel_rule_db_url = None
 
     assert parcel_response.status_code == 200
@@ -86,4 +89,7 @@ def test_repository_cache_resets_when_database_url_changes(monkeypatch, tmp_path
         if main_module._rule_lookup_repository is not None:
             main_module._rule_lookup_repository.engine.dispose()
             main_module._rule_lookup_repository = None
+        if main_module._question_ledger_repository is not None:
+            main_module._question_ledger_repository.engine.dispose()
+            main_module._question_ledger_repository = None
         main_module._parcel_rule_db_url = None

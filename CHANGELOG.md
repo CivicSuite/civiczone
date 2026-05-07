@@ -9,6 +9,7 @@ The format follows Keep a Changelog, and this project follows Semantic Versionin
 ### Added
 
 - Production-depth parcel/rule lookup persistence slice with `CIVICZONE_PARCEL_RULE_DB_URL`, seeded sample parcel/use/dimensional records, and Alembic revision `civiczone_0002_parcel_rules`.
+- Production-depth resident question ledger persistence for deterministic cited Q&A, including Alembic revision `civiczone_0003_question_ledger`.
 
 ### Changed
 
