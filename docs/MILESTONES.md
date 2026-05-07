@@ -14,7 +14,7 @@ Acceptance criteria:
 - Python package imports.
 - FastAPI app starts.
 - `/` and `/health` endpoints report current state without overstating behavior.
-- `civiccore==0.2.0` is pinned.
+- Historical v0.1.0 foundation pinned the then-current CivicCore release; current compatibility is tracked in `pyproject.toml`, `/health`, README, and the release gate.
 
 ## Milestone 2 - Canonical Zoning Schema And Migrations
 

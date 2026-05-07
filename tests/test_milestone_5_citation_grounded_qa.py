@@ -49,3 +49,13 @@ def test_question_api_success_shape() -> None:
     assert payload["citations"] == ["CMC 18.42.030"]
     assert payload["ledger_record_id"] is None
     assert "not a zoning determination" in payload["disclaimer"]
+
+
+def test_question_api_validation_error_is_actionable() -> None:
+    response = client.post("/api/v1/civiczone/questions/answer", json={})
+
+    assert response.status_code == 422
+    detail = response.json()["detail"]
+    assert "required fields" in detail["message"]
+    assert "zone_code" in detail["fix"]
+    assert "question" in detail["fix"]

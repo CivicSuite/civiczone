@@ -48,5 +48,15 @@ def test_planner_review_api_success_shape() -> None:
 def test_staff_precedent_api_is_explicitly_staff_only() -> None:
     response = client.get("/api/v1/civiczone/staff/precedents/historic-adu")
 
+    assert response.status_code == 403
+    assert "staff access" in response.json()["detail"]["message"]
+
+
+def test_staff_precedent_api_allows_staff_header() -> None:
+    response = client.get(
+        "/api/v1/civiczone/staff/precedents/historic-adu",
+        headers={"X-CivicZone-Role": "staff"},
+    )
+
     assert response.status_code == 200
     assert response.json()["visibility"] == "staff_only"

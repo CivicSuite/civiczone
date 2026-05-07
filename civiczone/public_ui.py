@@ -1,4 +1,4 @@
-"""Static public UI shell for CivicZone's v0.1.0 foundation."""
+"""Static public UI shell for CivicZone's public sample foundation."""
 
 from __future__ import annotations
 
@@ -114,7 +114,7 @@ def render_public_lookup_page() -> str:
     margin: 18px 0;
   }
   label { font-weight: 800; }
-  input, textarea, button {
+  input, textarea {
     width: 100%;
     border: 1px solid #c7b48d;
     border-radius: 16px;
@@ -122,15 +122,6 @@ def render_public_lookup_page() -> str:
     font: inherit;
   }
   input, textarea { background: var(--field); color: var(--ink); }
-  button {
-    width: fit-content;
-    min-width: 180px;
-    border: none;
-    background: var(--clay);
-    color: white;
-    font-weight: 900;
-    cursor: default;
-  }
   .result {
     margin-top: 18px;
     padding: 18px;
@@ -161,7 +152,6 @@ def render_public_lookup_page() -> str:
     header { padding-top: 34px; }
     .banner { grid-template-columns: 1fr; }
     .card { grid-column: span 12; padding: 20px; border-radius: 22px; }
-    button { width: 100%; }
   }
 </style>
 </head>
@@ -173,8 +163,8 @@ def render_public_lookup_page() -> str:
   <p class="lede">CivicZone's public UI foundation demonstrates the resident experience: enter a parcel, see zone context, read source-backed rules, and know when a planner needs to review the question.</p>
   <div class="banner" aria-label="Current product state">
     <div>
-      <span class="badge">v0.1.0 public UI foundation</span>
-      <p><strong>Shipped in this development build:</strong> accessible sample page, sample parcel lookup, sample use and dimensional rule cards, citation-grounded Q&amp;A, and planner-escalation guidance.</p>
+      <span class="badge">v0.1.2 public UI foundation + parcel/rule and question persistence</span>
+      <p><strong>Shipped in this development build:</strong> accessible sample page, sample parcel lookup, sample use and dimensional rule cards, citation-grounded Q&amp;A, resident question ledger persistence when configured, and planner-escalation guidance.</p>
     </div>
     <a href="/docs" aria-label="Open API documentation">API docs</a>
   </div>
@@ -187,8 +177,7 @@ def render_public_lookup_page() -> str:
       <form class="sample-form" aria-label="Sample parcel lookup form">
         <label for="parcel">Address or parcel number</label>
         <input id="parcel" name="parcel" value="123 Main St" aria-describedby="parcel-help">
-        <p id="parcel-help">This sample is pre-filled. Live GIS and assessor integration are not shipped yet.</p>
-        <button type="button">Show sample zoning context</button>
+        <p id="parcel-help">This sample is pre-filled and shown below. Live GIS and assessor integration are not shipped yet.</p>
       </form>
       <div class="result" role="status" aria-live="polite">
         <h3>R-2 Residential District</h3>

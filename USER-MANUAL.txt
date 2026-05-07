@@ -4,7 +4,7 @@
 
 CivicZone is planned to answer routine parcel-aware zoning questions with citations. It is not a zoning determination tool, not legal advice, and not a replacement for planner review.
 
-Current state: `0.1.1` public UI foundation release plus production-depth parcel/rule and resident-question persistence slices. The package, health endpoints, canonical zoning schema, Alembic migrations, sample parcel/zone lookup API, sample use/dimensional rule APIs, optional database-backed parcel/rule lookup records, resident question ledger records, citation-grounded sample Q&A, staff-context samples, an accessible public sample UI at `/civiczone`, and civiccore==1.0.0 dependency alignment exist. Live LLM calls, live GIS import, authentication/RBAC, official zoning determinations, and production workflow screens are not implemented yet.
+Current state: `0.1.2` public UI foundation release plus production-depth parcel/rule and resident-question persistence slices. The package, health endpoints, canonical zoning schema, Alembic migrations, sample parcel/zone lookup API, sample use/dimensional rule APIs, optional database-backed parcel/rule lookup records, resident question ledger records, citation-grounded sample Q&A, staff-context samples, an accessible public sample UI at `/civiczone`, and civiccore==1.0.0 dependency alignment exist. Live LLM calls, live GIS import, authentication/RBAC, official zoning determinations, and production workflow screens are not implemented yet.
 
 The public sample UI shows a pre-filled parcel lookup for `123 Main St`, sample zone context, use and dimensional-rule cards, citation-grounded Q&A, and planner-escalation guidance. It is informational only: it is not legal advice, not a zoning determination, and not a replacement for municipal planning staff.
 
@@ -27,6 +27,8 @@ CivicZone is a FastAPI Python package pinned to `civiccore==1.0.0`. The current 
 - `GET /api/v1/civiczone/staff/precedents/{precedent_id}` for staff-only sample context.
 
 Set CIVICZONE_PARCEL_RULE_DB_URL to persist parcel, use-rule, dimensional-rule, and resident-question ledger data. Leave it unset for deterministic in-memory sample data during local development and documentation examples.
+
+Resident question text is persisted as raw operational input when the ledger is configured. Do not enter sensitive personal details in sample Q&A, and apply the city's retention/privacy policy before sharing ledger records outside staff operations.
 
 Run local verification with:
 

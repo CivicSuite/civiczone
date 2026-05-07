@@ -24,6 +24,6 @@ This slice makes deterministic resident Q&A use configured rule lookup data and 
 
 ## Verification
 
-- Targeted resident Q&A and ledger persistence tests passed.
-- Full release verification must pass before push/merge.
-- Browser QA must confirm public documentation and sample UI remain readable at desktop and mobile widths with zero console errors.
+- Targeted resident Q&A and ledger persistence tests passed: `python -m pytest tests/test_milestone_5_citation_grounded_qa.py tests/test_production_depth_question_ledger.py -q` returned `10 passed`.
+- Full release verification passed: `bash scripts/verify-release.sh` returned `VERIFY-RELEASE: PASSED`.
+- Browser QA passed for `docs/index.html` and `/civiczone` at desktop and mobile widths with zero console errors, zero page errors, and no horizontal overflow.

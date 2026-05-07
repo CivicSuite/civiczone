@@ -3,8 +3,9 @@
 import os
 
 from civiccore import __version__ as CIVICCORE_VERSION
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
 
 from civiczone import __version__
@@ -22,6 +23,24 @@ app = FastAPI(
     description="Parcel-aware zoning and land-use Q&A foundation for CivicSuite.",
 )
 
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(_request: Request, exc: RequestValidationError) -> JSONResponse:
+    fields = ", ".join(str(error["loc"][-1]) for error in exc.errors() if error.get("loc"))
+    return JSONResponse(
+        status_code=422,
+        content={
+            "detail": {
+                "message": "CivicZone could not process the request because required fields are missing or invalid.",
+                "fix": (
+                    "Send valid JSON with required fields. For resident Q&A, include "
+                    "zone_code like 'R-2' and question like 'Can I build an ADU?'."
+                ),
+                "fields": fields,
+            }
+        },
+    )
+
 _parcel_lookup_repository: ParcelLookupRepository | None = None
 _rule_lookup_repository: RuleLookupRepository | None = None
 _question_ledger_repository: ZoneQuestionLedgerRepository | None = None
@@ -35,14 +54,14 @@ def root() -> dict[str, str]:
     return {
         "name": "CivicZone",
         "version": __version__,
-        "status": "public UI foundation plus parcel/rule persistence",
+        "status": "public UI foundation plus parcel/rule and question persistence",
         "message": (
             "CivicZone package, API foundation, canonical schema, Alembic migrations, "
-            "sample parcel lookup, use-rule lookup, dimensional prechecks, optional database-backed parcel/rule lookup records, "
+            "sample parcel lookup, use-rule lookup, dimensional prechecks, optional database-backed parcel/rule lookup records, resident question ledger records, "
             "citation-grounded sample Q&A, planner escalation, and an accessible public sample UI are online; "
             "live GIS ingestion and planner review workflows are not implemented yet."
         ),
-        "next_step": "Post-v0.1.1 roadmap: live GIS ingestion, production data wiring, authentication/RBAC, and planner review workflows",
+        "next_step": "Post-v0.1.2 roadmap: live GIS ingestion, production data wiring, authentication/RBAC, and planner review workflows",
     }
 
 
@@ -81,8 +100,8 @@ class DimensionalRuleLookupRequest(BaseModel):
 
 
 class ZoneQuestionRequest(BaseModel):
-    zone_code: str
-    question: str
+    zone_code: str = Field(min_length=1, max_length=80)
+    question: str = Field(min_length=1, max_length=1000)
 
 
 class PlannerReviewRequest(BaseModel):
@@ -173,7 +192,18 @@ def planner_review_classify(request: PlannerReviewRequest) -> dict[str, str]:
 
 
 @app.get("/api/v1/civiczone/staff/precedents/{precedent_id}")
-def staff_precedent(precedent_id: str) -> dict[str, str]:
+def staff_precedent(
+    precedent_id: str,
+    x_civiczone_role: str | None = Header(default=None),
+) -> dict[str, str]:
+    if x_civiczone_role != "staff":
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "message": "Staff precedent context requires staff access.",
+                "fix": "Use a staff-authenticated request through the configured municipal access layer.",
+            },
+        )
     precedent = get_staff_precedent(precedent_id)
     if precedent is None:
         raise HTTPException(
@@ -196,9 +226,10 @@ def _get_parcel_repository() -> ParcelLookupRepository:
     db_url = _parcel_rule_database_url()
     if db_url is None:
         raise RuntimeError("CIVICZONE_PARCEL_RULE_DB_URL is not configured.")
-    if _parcel_lookup_repository is None or db_url != _parcel_rule_db_url:
+    if db_url != _parcel_rule_db_url:
         _reset_configured_repositories()
         _parcel_rule_db_url = db_url
+    if _parcel_lookup_repository is None:
         _parcel_lookup_repository = ParcelLookupRepository(db_url=db_url)
     return _parcel_lookup_repository
 
@@ -208,10 +239,11 @@ def _get_rule_repository() -> RuleLookupRepository:
     db_url = _parcel_rule_database_url()
     if db_url is None:
         raise RuntimeError("CIVICZONE_PARCEL_RULE_DB_URL is not configured.")
-    if _rule_lookup_repository is None or db_url != _parcel_rule_db_url:
+    if db_url != _parcel_rule_db_url:
         _reset_configured_repositories()
         _parcel_rule_db_url = db_url
-        _rule_lookup_repository = RuleLookupRepository(db_url=db_url)
+    if _rule_lookup_repository is None:
+        _rule_lookup_repository = RuleLookupRepository(db_url=db_url, seed_defaults=False)
     return _rule_lookup_repository
 
 
@@ -220,9 +252,10 @@ def _get_question_ledger_repository() -> ZoneQuestionLedgerRepository:
     db_url = _parcel_rule_database_url()
     if db_url is None:
         raise RuntimeError("CIVICZONE_PARCEL_RULE_DB_URL is not configured.")
-    if _question_ledger_repository is None or db_url != _parcel_rule_db_url:
+    if db_url != _parcel_rule_db_url:
         _reset_configured_repositories()
         _parcel_rule_db_url = db_url
+    if _question_ledger_repository is None:
         _question_ledger_repository = ZoneQuestionLedgerRepository(db_url=db_url)
     return _question_ledger_repository
 

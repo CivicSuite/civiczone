@@ -6,7 +6,12 @@ from fastapi.testclient import TestClient
 import civiczone.main as main_module
 from civiczone.main import app
 from civiczone.question_ledger import ZoneQuestionLedgerRepository
-from civiczone.rule_lookup import RuleLookupRepository, UseRuleResult
+from civiczone.rule_lookup import (
+    dimensional_rule_lookup_records,
+    RuleLookupRepository,
+    UseRuleResult,
+    use_rule_lookup_records,
+)
 
 
 client = TestClient(app)
@@ -135,3 +140,50 @@ def test_repository_cache_resets_question_ledger_when_database_url_changes(monke
         assert main_module._parcel_rule_db_url == second_db_url
     finally:
         _reset_repositories()
+
+
+def test_same_database_repositories_can_coexist(monkeypatch, tmp_path) -> None:
+    db_url = f"sqlite:///{tmp_path / 'coexisting-repositories.db'}"
+    monkeypatch.setenv("CIVICZONE_PARCEL_RULE_DB_URL", db_url)
+
+    try:
+        parcel_repository = main_module._get_parcel_repository()
+        rule_repository = main_module._get_rule_repository()
+        ledger_repository = main_module._get_question_ledger_repository()
+
+        assert parcel_repository is main_module._parcel_lookup_repository
+        assert rule_repository is main_module._rule_lookup_repository
+        assert ledger_repository is main_module._question_ledger_repository
+    finally:
+        _reset_repositories()
+
+
+def test_configured_question_lookup_does_not_seed_sample_rules(monkeypatch, tmp_path) -> None:
+    db_url = f"sqlite:///{tmp_path / 'no-sample-seed.db'}"
+    RuleLookupRepository(db_url=db_url, seed_defaults=False).engine.dispose()
+    monkeypatch.setenv("CIVICZONE_PARCEL_RULE_DB_URL", db_url)
+
+    try:
+        response = client.post(
+            "/api/v1/civiczone/questions/answer",
+            json={"zone_code": "MX-1", "question": "Can I build an ADU?"},
+        )
+    finally:
+        _reset_repositories()
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "refused"
+
+    repository = RuleLookupRepository(db_url=db_url, seed_defaults=False)
+    with repository.engine.begin() as connection:
+        use_count = connection.execute(sa.select(sa.func.count()).select_from(use_rule_lookup_records)).scalar_one()
+        dimensional_count = connection.execute(
+            sa.select(sa.func.count()).select_from(dimensional_rule_lookup_records)
+        ).scalar_one()
+    repository.engine.dispose()
+
+    ledger = ZoneQuestionLedgerRepository(db_url=db_url)
+    assert len(ledger.list_records()) == 1
+    ledger.engine.dispose()
+    assert use_count == 0
+    assert dimensional_count == 0
