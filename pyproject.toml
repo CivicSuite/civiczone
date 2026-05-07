@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "civiczone"
-version = "0.1.2"
+version = "1.0.0"
 description = "CivicZone runtime foundation for parcel-aware zoning and land-use Q&A."
 readme = "README.md"
 requires-python = ">=3.11"

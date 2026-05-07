@@ -18,7 +18,7 @@ def test_public_ui_route_returns_accessible_html() -> None:
     assert '<main id="main" tabindex="-1">' in text
     assert "aria-label=\"Current product state\"" in text
     assert "aria-live=\"polite\"" in text
-    assert "v0.1.2 public UI foundation" in text
+    assert "v1.0.0 cited zoning lookup" in text
     assert "<button" not in text
 
 
@@ -43,8 +43,8 @@ def test_public_ui_keeps_boundaries_actionable_and_honest() -> None:
     assert "does not provide legal advice" in text
     assert "does not make a zoning determination" in text
     assert "does not replace your planning department" in text
-    assert "live GIS" in text
-    assert "not shipped yet" in text
+    assert "routes judgment calls" in text
+    assert "No parcel was found" in text
     assert "Staff-only precedent context is kept out" in text
     assert "Shipping v0.1.0" not in text
     assert "v0.1.0 public UI foundation" not in text

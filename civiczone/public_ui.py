@@ -1,10 +1,10 @@
-"""Static public UI shell for CivicZone's public sample foundation."""
+"""Static public UI shell for CivicZone's resident zoning lookup surface."""
 
 from __future__ import annotations
 
 
 def render_public_lookup_page() -> str:
-    """Render the accessible public-facing CivicZone sample page."""
+    """Render the accessible public-facing CivicZone lookup page."""
 
     return """<!DOCTYPE html>
 <html lang="en">
@@ -130,6 +130,21 @@ def render_public_lookup_page() -> str:
     background: white;
   }
   .result.warning { border-left-color: var(--clay); }
+  .result.empty { border-left-color: var(--gold); }
+  .state-list {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .state {
+    min-height: 132px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, .72);
+  }
+  .state strong { display: block; margin-bottom: 6px; }
   .kicker {
     color: var(--muted);
     font-size: .86rem;
@@ -152,19 +167,20 @@ def render_public_lookup_page() -> str:
     header { padding-top: 34px; }
     .banner { grid-template-columns: 1fr; }
     .card { grid-column: span 12; padding: 20px; border-radius: 22px; }
+    .state-list { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
 <header>
-  <p class="eyebrow">CivicSuite / CivicZone public sample</p>
+  <p class="eyebrow">CivicSuite / CivicZone resident lookup</p>
   <h1>Find zoning context before you ask for a ruling.</h1>
-  <p class="lede">CivicZone's public UI foundation demonstrates the resident experience: enter a parcel, see zone context, read source-backed rules, and know when a planner needs to review the question.</p>
+  <p class="lede">CivicZone helps residents and staff inspect parcel zoning context, cited use rules, dimensional standards, and escalation paths without turning informational guidance into an official determination.</p>
   <div class="banner" aria-label="Current product state">
     <div>
-      <span class="badge">v0.1.2 public UI foundation + parcel/rule and question persistence</span>
-      <p><strong>Shipped in this development build:</strong> accessible sample page, sample parcel lookup, sample use and dimensional rule cards, citation-grounded Q&amp;A, resident question ledger persistence when configured, and planner-escalation guidance.</p>
+      <span class="badge">v1.0.0 cited zoning lookup + staff escalation</span>
+      <p><strong>Available now:</strong> parcel lookup, zone and overlay context, cited use and dimensional rule cards, deterministic resident Q&amp;A, staff escalation, optional local persistence, staff workflow APIs, and local adversarial integration validation.</p>
     </div>
     <a href="/docs" aria-label="Open API documentation">API docs</a>
   </div>
@@ -172,12 +188,12 @@ def render_public_lookup_page() -> str:
 <main id="main" tabindex="-1">
   <section class="grid" aria-labelledby="lookup-title">
     <article class="card large">
-      <p class="kicker">Sample parcel lookup</p>
+      <p class="kicker">Parcel lookup</p>
       <h2 id="lookup-title">123 Main St</h2>
       <form class="sample-form" aria-label="Sample parcel lookup form">
         <label for="parcel">Address or parcel number</label>
         <input id="parcel" name="parcel" value="123 Main St" aria-describedby="parcel-help">
-        <p id="parcel-help">This sample is pre-filled and shown below. Live GIS and assessor integration are not shipped yet.</p>
+        <p id="parcel-help">This example is pre-filled. Cities can load local parcel and rule records with CIVICZONE_PARCEL_RULE_DB_URL.</p>
       </form>
       <div class="result" role="status" aria-live="polite">
         <h3>R-2 Residential District</h3>
@@ -185,7 +201,7 @@ def render_public_lookup_page() -> str:
           <li><strong>Parcel:</strong> 100-200-300</li>
           <li><strong>Overlay:</strong> Historic District Overlay</li>
           <li><strong>Constraints:</strong> Historic review required for exterior alterations; ADU review may require planner confirmation.</li>
-          <li><strong>Source:</strong> sample zoning table, not live GIS.</li>
+          <li><strong>Source:</strong> configured local zoning dataset or bundled municipal sample fixture.</li>
         </ul>
       </div>
     </article>
@@ -197,6 +213,29 @@ def render_public_lookup_page() -> str:
         <h3>Conditional use review</h3>
         <p>In sample zone R-2, an accessory dwelling unit is shown as conditionally allowed.</p>
         <p><strong>Citation:</strong> Sample Zoning Code &sect; 18.20.040.</p>
+      </div>
+    </article>
+
+    <article class="card large">
+      <p class="kicker">User-visible states</p>
+      <h2>Clear outcomes for residents</h2>
+      <div class="state-list" aria-label="CivicZone user-visible states">
+        <div class="state" role="status">
+          <strong>Loading</strong>
+          Checking the configured parcel and zoning-rule dataset.
+        </div>
+        <div class="state">
+          <strong>Success</strong>
+          Parcel context and citations are shown with an informational-only boundary.
+        </div>
+        <div class="state empty">
+          <strong>Empty</strong>
+          No parcel was found. Check the address or ask staff to load local parcel records.
+        </div>
+        <div class="state warning">
+          <strong>Error or partial</strong>
+          Missing citations, stale source data, or determination requests are routed to planning staff.
+        </div>
       </div>
     </article>
 
@@ -232,7 +271,7 @@ def render_public_lookup_page() -> str:
 
   <section class="notice" aria-labelledby="boundary-title">
     <h2 id="boundary-title">Important boundaries</h2>
-    <p>CivicZone does not provide legal advice, does not make a zoning determination, and does not replace your planning department. This public UI is a sample foundation until live GIS, authentication, review queues, and production data ingestion ship.</p>
+    <p>CivicZone does not provide legal advice, does not make a zoning determination, and does not replace your planning department. It provides cited informational context and routes judgment calls, missing citations, stale data, and official-decision requests to staff.</p>
     <p>If your question affects property rights, deadlines, permits, enforcement, variances, or appeals, contact municipal planning staff for an official decision.</p>
   </section>
 </main>

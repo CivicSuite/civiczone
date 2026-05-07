@@ -1,9 +1,10 @@
 """FastAPI runtime foundation for CivicZone."""
 
+from dataclasses import dataclass
 import os
 
 from civiccore import __version__ as CIVICCORE_VERSION
-from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
@@ -15,12 +16,13 @@ from civiczone.question_ledger import ZoneQuestionLedgerRepository
 from civiczone.qa import answer_zoning_question
 from civiczone.rule_lookup import RuleLookupError, RuleLookupRepository, lookup_dimensional_rule, lookup_use_rule
 from civiczone.staff_context import classify_for_planner_review, get_staff_precedent
+from civiczone.staff_workflows import StaffWorkflowStore
 
 
 app = FastAPI(
     title="CivicZone",
     version=__version__,
-    description="Parcel-aware zoning and land-use Q&A foundation for CivicSuite.",
+    description="Parcel-aware zoning and land-use Q&A for CivicSuite.",
 )
 
 
@@ -45,6 +47,13 @@ _parcel_lookup_repository: ParcelLookupRepository | None = None
 _rule_lookup_repository: RuleLookupRepository | None = None
 _question_ledger_repository: ZoneQuestionLedgerRepository | None = None
 _parcel_rule_db_url: str | None = None
+_staff_workflow_store = StaffWorkflowStore()
+
+
+@dataclass(frozen=True)
+class StaffPrincipal:
+    subject: str
+    roles: tuple[str, ...]
 
 
 @app.get("/")
@@ -54,14 +63,14 @@ def root() -> dict[str, str]:
     return {
         "name": "CivicZone",
         "version": __version__,
-        "status": "public UI foundation plus parcel/rule and question persistence",
+        "status": "v1 parcel-aware zoning Q&A runtime",
         "message": (
-            "CivicZone package, API foundation, canonical schema, Alembic migrations, "
-            "sample parcel lookup, use-rule lookup, dimensional prechecks, optional database-backed parcel/rule lookup records, resident question ledger records, "
-            "citation-grounded sample Q&A, planner escalation, and an accessible public sample UI are online; "
-            "live GIS ingestion and planner review workflows are not implemented yet."
+            "CivicZone v1.0.0 provides deterministic parcel lookup, cited use-rule lookup, cited dimensional prechecks, "
+            "resident zoning Q&A with refusal and escalation rules, staff workflow APIs, optional database-backed parcel/rule and question-ledger records, "
+            "canonical zoning schema migrations, adversarial local integration mocks, and an accessible resident UI. "
+            "It does not make zoning determinations, give legal advice, replace planner review, or call live external systems by default."
         ),
-        "next_step": "Post-v0.1.2 roadmap: live GIS ingestion, production data wiring, authentication/RBAC, and planner review workflows",
+        "next_step": "Configure local parcel/rule data, connect the trusted municipal access layer, and route official decisions to planning staff.",
     }
 
 
@@ -108,6 +117,71 @@ class PlannerReviewRequest(BaseModel):
     question: str
 
 
+class StaffQuestionAnswerRequest(BaseModel):
+    zone_code: str = Field(min_length=1, max_length=80)
+    question: str = Field(min_length=1, max_length=1000)
+
+
+class AmbiguityReviewCreateRequest(BaseModel):
+    zone_code: str = Field(min_length=1, max_length=80)
+    question: str = Field(min_length=1, max_length=1000)
+    reason: str = Field(min_length=1, max_length=1000)
+
+
+class AmbiguityReviewUpdateRequest(BaseModel):
+    status: str = Field(min_length=1, max_length=80)
+    assigned_to: str | None = Field(default=None, max_length=255)
+    resolution: str | None = Field(default=None, max_length=1000)
+
+
+class StaffReportOutlineRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=255)
+    question_ids: list[str] = Field(default_factory=list)
+    queue_item_ids: list[str] = Field(default_factory=list)
+
+
+class FlaggedAnswerCreateRequest(BaseModel):
+    zone_code: str = Field(min_length=1, max_length=80)
+    question: str = Field(min_length=1, max_length=1000)
+    original_answer: str = Field(min_length=1, max_length=2000)
+    flag_reason: str = Field(min_length=1, max_length=1000)
+    citations: list[str] = Field(default_factory=list)
+
+
+class FlaggedAnswerImproveRequest(BaseModel):
+    improved_answer: str = Field(min_length=1, max_length=2000)
+    improvement_notes: str = Field(min_length=1, max_length=1000)
+
+
+def _require_staff_access(request: Request) -> StaffPrincipal:
+    allowed_roles = {"planner", "staff", "zoning_admin"}
+    subject = request.headers.get("X-CivicZone-Principal", "").strip()
+    if not subject:
+        raise HTTPException(
+            status_code=401,
+            detail={
+                "message": "Trusted identity header missing for CivicZone staff workflow access.",
+                "fix": "Send X-CivicZone-Principal from the trusted municipal access layer.",
+            },
+        )
+    roles = tuple(
+        role.strip()
+        for raw_value in request.headers.getlist("X-CivicZone-Role")
+        for role in raw_value.split(",")
+        if role.strip()
+    )
+    if not allowed_roles.intersection(roles):
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "message": "CivicZone staff workflow access requires a staff planning role.",
+                "fix": "Send X-CivicZone-Role with planner, staff, or zoning_admin.",
+                "required_roles": sorted(allowed_roles),
+            },
+        )
+    return StaffPrincipal(subject=subject, roles=roles)
+
+
 @app.post("/api/v1/civiczone/parcels/lookup")
 def parcel_lookup(request: ParcelLookupRequest) -> dict[str, object]:
     if not request.parcel_number and not request.address:
@@ -115,7 +189,7 @@ def parcel_lookup(request: ParcelLookupRequest) -> dict[str, object]:
             status_code=422,
             detail={
                 "message": "Provide either parcel_number or address.",
-                "fix": "Send parcel_number '100-200-300' or address '123 Main St' in this development build.",
+                "fix": "Send parcel_number '100-200-300' or address '123 Main St', or load local parcel records into CIVICZONE_PARCEL_RULE_DB_URL.",
             },
         )
 
@@ -180,6 +254,9 @@ def zone_question_answer(request: ZoneQuestionRequest) -> dict[str, object]:
         "status": result.status,
         "answer": result.answer,
         "citations": list(result.citations),
+        "reason": result.reason,
+        "confidence": result.confidence,
+        "next_step": result.next_step,
         "disclaimer": result.disclaimer,
         "ledger_record_id": ledger_record.id if ledger_record is not None else None,
     }
@@ -194,16 +271,8 @@ def planner_review_classify(request: PlannerReviewRequest) -> dict[str, str]:
 @app.get("/api/v1/civiczone/staff/precedents/{precedent_id}")
 def staff_precedent(
     precedent_id: str,
-    x_civiczone_role: str | None = Header(default=None),
+    _principal: StaffPrincipal = Depends(_require_staff_access),
 ) -> dict[str, str]:
-    if x_civiczone_role != "staff":
-        raise HTTPException(
-            status_code=403,
-            detail={
-                "message": "Staff precedent context requires staff access.",
-                "fix": "Use a staff-authenticated request through the configured municipal access layer.",
-            },
-        )
     precedent = get_staff_precedent(precedent_id)
     if precedent is None:
         raise HTTPException(
@@ -215,6 +284,160 @@ def staff_precedent(
         "summary": precedent.summary,
         "visibility": precedent.visibility,
     }
+
+
+@app.post("/api/v1/civiczone/staff/questions/answer")
+def staff_question_answer(
+    request: StaffQuestionAnswerRequest,
+    principal: StaffPrincipal = Depends(_require_staff_access),
+) -> dict[str, object]:
+    record = _staff_workflow_store.answer_planner_question(
+        zone_code=request.zone_code,
+        question_text=request.question,
+        created_by=principal.subject or "staff",
+    )
+    return _staff_question_record_payload(record)
+
+
+@app.post("/api/v1/civiczone/staff/ambiguity-reviews")
+def create_ambiguity_review(
+    request: AmbiguityReviewCreateRequest,
+    principal: StaffPrincipal = Depends(_require_staff_access),
+) -> dict[str, object]:
+    item = _staff_workflow_store.create_queue_item(
+        zone_code=request.zone_code,
+        question_text=request.question,
+        reason=request.reason,
+        created_by=principal.subject or "staff",
+    )
+    return _queue_item_payload(item)
+
+
+@app.get("/api/v1/civiczone/staff/ambiguity-reviews")
+def list_ambiguity_reviews(
+    status: str | None = None,
+    _principal: StaffPrincipal = Depends(_require_staff_access),
+) -> dict[str, object]:
+    return {
+        "items": [_queue_item_payload(item) for item in _staff_workflow_store.list_queue_items(status=status)],
+        "visibility": "staff_only",
+    }
+
+
+@app.patch("/api/v1/civiczone/staff/ambiguity-reviews/{item_id}")
+def update_ambiguity_review(
+    item_id: str,
+    request: AmbiguityReviewUpdateRequest,
+    _principal: StaffPrincipal = Depends(_require_staff_access),
+) -> dict[str, object]:
+    try:
+        item = _staff_workflow_store.update_queue_item(
+            item_id=item_id,
+            status=request.status,
+            assigned_to=request.assigned_to,
+            resolution=request.resolution,
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail={"message": "Ambiguity review update is invalid.", "fix": str(exc)},
+        ) from exc
+    if item is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Ambiguity review item was not found.",
+                "fix": "List staff ambiguity reviews and retry with an existing item id.",
+            },
+        )
+    return _queue_item_payload(item)
+
+
+@app.get("/api/v1/civiczone/staff/questions/analytics")
+def staff_question_analytics(
+    high_volume_threshold: int = 2,
+    _principal: StaffPrincipal = Depends(_require_staff_access),
+) -> dict[str, object]:
+    analytics = _staff_workflow_store.analytics(high_volume_threshold=high_volume_threshold)
+    return {
+        "total_questions": analytics.total_questions,
+        "by_status": analytics.by_status,
+        "high_volume_questions": [
+            {
+                "zone_code": question.zone_code,
+                "question_text": question.question_text,
+                "count": question.count,
+                "statuses": list(question.statuses),
+                "latest_question_id": question.latest_question_id,
+            }
+            for question in analytics.high_volume_questions
+        ],
+        "generated_at": analytics.generated_at.isoformat(),
+        "visibility": analytics.visibility,
+    }
+
+
+@app.post("/api/v1/civiczone/staff/reports/outline")
+def staff_report_outline(
+    request: StaffReportOutlineRequest,
+    principal: StaffPrincipal = Depends(_require_staff_access),
+) -> dict[str, object]:
+    outline = _staff_workflow_store.draft_report_outline(
+        title=request.title,
+        question_ids=request.question_ids,
+        queue_item_ids=request.queue_item_ids,
+        created_by=principal.subject or "staff",
+    )
+    return {
+        "id": outline.id,
+        "title": outline.title,
+        "sections": list(outline.sections),
+        "source_question_ids": list(outline.source_question_ids),
+        "source_queue_item_ids": list(outline.source_queue_item_ids),
+        "created_by": outline.created_by,
+        "created_at": outline.created_at.isoformat(),
+        "visibility": outline.visibility,
+        "disclaimer": outline.disclaimer,
+    }
+
+
+@app.post("/api/v1/civiczone/staff/flagged-answers")
+def create_flagged_answer_review(
+    request: FlaggedAnswerCreateRequest,
+    principal: StaffPrincipal = Depends(_require_staff_access),
+) -> dict[str, object]:
+    review = _staff_workflow_store.flag_answer(
+        zone_code=request.zone_code,
+        question_text=request.question,
+        original_answer=request.original_answer,
+        flag_reason=request.flag_reason,
+        citations=request.citations,
+        created_by=principal.subject or "staff",
+    )
+    return _flagged_answer_payload(review)
+
+
+@app.patch("/api/v1/civiczone/staff/flagged-answers/{review_id}/improve")
+def improve_flagged_answer_review(
+    review_id: str,
+    request: FlaggedAnswerImproveRequest,
+    principal: StaffPrincipal = Depends(_require_staff_access),
+) -> dict[str, object]:
+    review = _staff_workflow_store.improve_flagged_answer(
+        review_id=review_id,
+        improved_answer=request.improved_answer,
+        improvement_notes=request.improvement_notes,
+        reviewed_by=principal.subject or "staff",
+    )
+    if review is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Flagged answer review was not found.",
+                "fix": "Create or list the flagged answer review before submitting improvements.",
+            },
+        )
+    return _flagged_answer_payload(review)
 
 
 def _parcel_rule_database_url() -> str | None:
@@ -283,9 +506,9 @@ def _record_zone_question(*, zone_code: str, question: str, result):
         return None
     escalation_reason = None
     if result.status == "escalate":
-        escalation_reason = "Planner review required before relying on this answer."
+        escalation_reason = result.next_step
     elif result.status == "refused":
-        escalation_reason = "No cited zoning answer was available from the configured dataset."
+        escalation_reason = result.next_step
     return _get_question_ledger_repository().record_answer(
         zone_code=zone_code,
         question_text=question,
@@ -296,6 +519,70 @@ def _record_zone_question(*, zone_code: str, question: str, result):
         disclaimer=result.disclaimer,
         escalation_reason=escalation_reason,
     )
+
+
+def _staff_question_record_payload(record) -> dict[str, object]:
+    return {
+        "id": record.id,
+        "zone_code": record.zone_code,
+        "question": record.question_text,
+        "status": record.status,
+        "answer": record.answer_text,
+        "citations": list(record.citations),
+        "code_cross_references": [
+            {
+                "citation": reference.citation,
+                "source": reference.source,
+                "relevance": reference.relevance,
+            }
+            for reference in record.code_cross_references
+        ],
+        "created_by": record.created_by,
+        "created_at": record.created_at.isoformat(),
+        "visibility": record.visibility,
+        "disclaimer": record.disclaimer,
+    }
+
+
+def _queue_item_payload(item) -> dict[str, object]:
+    return {
+        "id": item.id,
+        "zone_code": item.zone_code,
+        "question": item.question_text,
+        "reason": item.reason,
+        "status": item.status,
+        "assigned_to": item.assigned_to,
+        "resolution": item.resolution,
+        "source_question_id": item.source_question_id,
+        "created_by": item.created_by,
+        "created_at": item.created_at.isoformat(),
+        "updated_at": item.updated_at.isoformat(),
+        "visibility": item.visibility,
+    }
+
+
+def _flagged_answer_payload(review) -> dict[str, object]:
+    return {
+        "id": review.id,
+        "zone_code": review.zone_code,
+        "question": review.question_text,
+        "original_answer": review.original_answer,
+        "flag_reason": review.flag_reason,
+        "citations": list(review.citations),
+        "status": review.status,
+        "improved_answer": review.improved_answer,
+        "improvement_notes": review.improvement_notes,
+        "reviewed_by": review.reviewed_by,
+        "created_by": review.created_by,
+        "created_at": review.created_at.isoformat(),
+        "updated_at": review.updated_at.isoformat(),
+        "visibility": review.visibility,
+    }
+
+
+def _reset_staff_workflow_store() -> None:
+    global _staff_workflow_store
+    _staff_workflow_store = StaffWorkflowStore()
 
 
 def _dispose_repository(repository: object | None) -> None:

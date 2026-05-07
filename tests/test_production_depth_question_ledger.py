@@ -95,7 +95,7 @@ def test_question_ledger_records_refusals_with_actionable_reason(monkeypatch, tm
     assert records[0].status == "refused"
     assert records[0].citation_payload == ()
     assert records[0].escalation_reason == (
-        "No cited zoning answer was available from the configured dataset."
+        "Load use rules into CIVICZONE_PARCEL_RULE_DB_URL or try the sample R-2 ADU rule."
     )
     ledger.engine.dispose()
 

@@ -12,6 +12,8 @@ def test_adu_question_returns_citation_and_disclaimer() -> None:
 
     assert result.status == "answered"
     assert result.citations == ("CMC 18.42.030",)
+    assert result.confidence == "high"
+    assert result.reason == "cited_use_rule"
     assert "not a zoning determination" in result.disclaimer
 
 
@@ -28,6 +30,29 @@ def test_determination_question_escalates_without_citations() -> None:
     assert result.status == "escalate"
     assert result.citations == ()
     assert "planner review" in result.answer
+    assert result.reason == "determination_request"
+
+
+def test_out_of_jurisdiction_question_refuses_with_fix_path() -> None:
+    result = answer_zoning_question(
+        zone_code="R-2",
+        question="What zoning applies to county land outside city limits?",
+    )
+
+    assert result.status == "refused"
+    assert result.reason == "out_of_jurisdiction"
+    assert "Contact the jurisdiction" in result.next_step
+
+
+def test_low_confidence_question_escalates_to_staff() -> None:
+    result = answer_zoning_question(
+        zone_code="R-2",
+        question="The overlay data is conflicting and unclear.",
+    )
+
+    assert result.status == "escalate"
+    assert result.reason == "low_confidence"
+    assert result.confidence == "low"
 
 
 def test_unknown_question_refuses_uncited_answer() -> None:
@@ -47,6 +72,9 @@ def test_question_api_success_shape() -> None:
     payload = response.json()
     assert payload["status"] == "answered"
     assert payload["citations"] == ["CMC 18.42.030"]
+    assert payload["reason"] == "cited_use_rule"
+    assert payload["confidence"] == "high"
+    assert "Confirm parcel-specific overlays" in payload["next_step"]
     assert payload["ledger_record_id"] is None
     assert "not a zoning determination" in payload["disclaimer"]
 

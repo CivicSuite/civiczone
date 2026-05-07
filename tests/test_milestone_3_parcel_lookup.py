@@ -55,4 +55,4 @@ def test_api_lookup_unknown_parcel_is_actionable_404() -> None:
     assert response.status_code == 404
     detail = response.json()["detail"]
     assert detail["message"] == "Parcel not found in the CivicZone sample dataset."
-    assert "live GIS import is planned" in detail["fix"]
+    assert "CIVICZONE_PARCEL_RULE_DB_URL" in detail["fix"]

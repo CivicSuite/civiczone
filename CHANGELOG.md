@@ -4,6 +4,20 @@ All notable changes to CivicZone will be documented in this file.
 
 The format follows Keep a Changelog, and this project follows Semantic Versioning.
 
+## [1.0.0] - 2026-05-07
+
+### Added
+
+- v1 resident zoning Q&A runtime with deterministic cited answers, refusal and escalation reasons, confidence metadata, and actionable next steps.
+- Staff workflow APIs for planner Q&A, ambiguity review queue, high-volume question analytics, staff-report outline support, and flagged-answer review.
+- Local adversarial integration mocks for Esri ArcGIS REST, GeoJSON fallback, CivicCode, CivicClerk, CivicPlan, CivicAccess, county assessor, and CKAN boundary validation.
+- Resident UI copy and visible state guidance for loading, success, empty, error, and partial outcomes.
+
+### Changed
+
+- Promoted CivicZone release surfaces from `0.1.2` to `1.0.0`.
+- Updated runtime and documentation boundaries to describe the v1 product without claiming legal advice, official zoning determinations, or live external vendor calls by default.
+
 ## [0.1.2] - 2026-05-07
 
 ### Added
