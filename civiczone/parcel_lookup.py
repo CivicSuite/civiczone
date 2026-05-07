@@ -144,8 +144,8 @@ def lookup_parcel(*, parcel_number: str | None = None, address: str | None = Non
     return ParcelLookupError(
         message="Parcel not found in the CivicZone sample dataset.",
         fix=(
-            "Use parcel_number '100-200-300' or address '123 Main St' in this "
-            "development build; live GIS import is planned for a later milestone."
+            "Use parcel_number '100-200-300' or address '123 Main St', or load local parcel records "
+            "into the configured CIVICZONE_PARCEL_RULE_DB_URL store."
         ),
     )
 

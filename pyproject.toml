@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "civiczone"
-version = "0.1.1"
+version = "1.0.0"
 description = "CivicZone runtime foundation for parcel-aware zoning and land-use Q&A."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -13,7 +13,7 @@ authors = [
   { name = "CivicSuite contributors" }
 ]
 dependencies = [
-  "civiccore==0.3.0",
+  "civiccore==1.0.0",
   "fastapi>=0.115.0,<1.0.0",
   "uvicorn[standard]>=0.30.0,<1.0.0",
 ]
@@ -41,8 +41,28 @@ include = [
   "scripts",
   "tests",
   "README.md",
+  "README.txt",
   "CHANGELOG.md",
   "USER-MANUAL.md",
+  "USER-MANUAL.txt",
+  "CONTRIBUTING.md",
+  "SECURITY.md",
+  "SUPPORT.md",
+  "CODE_OF_CONDUCT.md",
+  "AGENTS.md",
+  ".github",
+  "docs",
+  "MILESTONE_0_DONE.md",
+  "MILESTONE_1_DONE.md",
+  "MILESTONE_2_DONE.md",
+  "MILESTONE_3_DONE.md",
+  "MILESTONE_4_DONE.md",
+  "MILESTONE_5_DONE.md",
+  "MILESTONE_6_DONE.md",
+  "MILESTONE_7_DONE.md",
+  "MILESTONE_8_DONE.md",
+  "PRODUCTION_DEPTH_PARCEL_RULE_PERSISTENCE_DONE.md",
+  "PRODUCTION_DEPTH_QUESTION_LEDGER_DONE.md",
   "LICENSE-CODE",
   "LICENSE-DOCS",
 ]

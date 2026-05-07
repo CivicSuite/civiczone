@@ -1,25 +1,15 @@
 # CivicZone
 
-CivicZone is the planned CivicSuite module for parcel-aware zoning and land-use Q&A.
+CivicZone is CivicSuite's parcel-aware zoning and land-use Q&A module.
 
-Current state: **v0.1.1 public UI foundation release plus production-depth parcel/rule persistence slice**. This repo ships a package shell, health/root endpoints, documentation gates, canonical zoning schema models, Alembic migration scaffold, sample parcel/zone lookup API, sample use/dimensional rule APIs, optional database-backed parcel/rule lookup records via `CIVICZONE_PARCEL_RULE_DB_URL`, citation-grounded sample Q&A, planner-escalation/staff-context samples, an accessible public sample UI at `/civiczone`, and `civiccore==0.3.0` dependency alignment. It does **not** yet use live LLM calls, ingest live GIS data, make zoning determinations, or replace planner review.
+Current state: **v1.0.0 product release**. This repo ships a FastAPI service, health/root endpoints, documentation gates, canonical zoning schema models, Alembic migrations, deterministic parcel/zone lookup, cited use-rule lookup, cited dimensional-rule prechecks, resident Q&A with refusal and escalation rules, optional database-backed parcel/rule, resident-question ledger, and staff-workflow records through `CIVICZONE_PARCEL_RULE_DB_URL`, staff-only precedent protection, an accessible resident UI at `/civiczone`, adversarial local integration mocks, and `civiccore==1.0.0` dependency alignment.
 
-## What CivicZone Will Do
+## Product Boundaries
 
-- Let residents enter an address or parcel and see zoning context.
-- Explain allowed-use, setback, overlay, and review-path questions with citations.
-- Refuse or escalate zoning-determination requests.
-- Route ambiguous, low-confidence, variance, CUP, and out-of-jurisdiction questions to staff.
-- Use CivicCode as the authoritative municipal-code source.
-
-## What Is Not Shipped Yet
-
-- Live GIS import or Esri integration.
-- Production GIS/assessor synchronization.
-- Zoning Q&A.
-- Planner review queue.
-- Production resident UI connected to live GIS, authentication, and planner review workflows.
-- Legal/zoning determinations.
+- CivicZone gives informational zoning context with citations.
+- CivicZone refuses or escalates zoning-determination, legal-advice, out-of-jurisdiction, stale-data, low-confidence, and uncited-answer requests.
+- CivicZone does not make zoning determinations, approve permits, replace planner review, or call live external vendor systems by default.
+- CivicZone integration behavior is validated with local adversarial mocks for Esri ArcGIS REST, GeoJSON fallback, CivicCode, CivicClerk, CivicPlan, CivicAccess, county assessor, and CKAN boundaries.
 
 ## Developer Quickstart
 
@@ -33,17 +23,29 @@ bash scripts/verify-release.sh
 
 ## API Foundation
 
-- `GET /` returns current module status and next milestone.
+- `GET /` returns current module status and operator next step.
 - `GET /health` returns package and CivicCore version information.
-- `GET /civiczone` returns the accessible public sample UI.
+- `GET /civiczone` returns the accessible resident lookup UI.
 - `POST /api/v1/civiczone/parcels/lookup` returns sample parcel zone context for `100-200-300` / `123 Main St`.
 - `POST /api/v1/civiczone/rules/use` returns sample use status with citation.
 - `POST /api/v1/civiczone/rules/dimensional` returns sample dimensional rule values with citation.
-- `POST /api/v1/civiczone/questions/answer` answers sample resident questions only when citations are available.
+- `POST /api/v1/civiczone/questions/answer` answers sample resident questions only when citations are available and records a local question-ledger row when `CIVICZONE_PARCEL_RULE_DB_URL` is configured.
 - `POST /api/v1/civiczone/planner-review/classify` identifies sample discretionary-review triggers.
 - `GET /api/v1/civiczone/staff/precedents/{precedent_id}` returns staff-only sample precedent context.
+- `POST /api/v1/civiczone/staff/questions/answer` gives staff Q&A with citations and informational boundaries.
+- `POST /api/v1/civiczone/staff/ambiguity-reviews` creates planner review queue items.
+- `GET /api/v1/civiczone/staff/questions/analytics` returns high-volume question analytics.
+- `POST /api/v1/civiczone/staff/reports/outline` creates cited staff-report outline support.
+- `POST /api/v1/civiczone/staff/flagged-answers` and `/improve` support staff review and improvement of flagged answers.
 
-Set `CIVICZONE_PARCEL_RULE_DB_URL` to enable persistent parcel, use-rule, and dimensional-rule lookup records. When unset, CivicZone continues to use deterministic in-memory sample data for local development and documentation examples.
+Resident question text is stored only when `CIVICZONE_PARCEL_RULE_DB_URL` is configured. Cities should treat those rows as operational records, avoid entering sensitive personal details into sample Q&A, and apply local retention/privacy policy before exposing the ledger outside staff operations.
+
+Set `CIVICZONE_PARCEL_RULE_DB_URL` to enable persistent parcel, use-rule, dimensional-rule, resident-question ledger, and staff workflow records. When unset, CivicZone uses deterministic in-memory sample data and does not persist question or staff workflow rows.
+
+Staff workflow endpoints require trusted municipal access headers:
+
+- `X-CivicZone-Principal`
+- `X-CivicZone-Role: planner`, `staff`, or `zoning_admin`
 
 ## License
 

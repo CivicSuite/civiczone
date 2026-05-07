@@ -1,11 +1,23 @@
 CivicZone
 =========
 
-CivicZone is the planned CivicSuite module for parcel-aware zoning and land-use Q&A.
+CivicZone is CivicSuite's parcel-aware zoning and land-use Q&A module.
 
-Current state: v0.1.1 public UI foundation release plus production-depth parcel/rule persistence slice. This repo ships a package shell, health/root endpoints, documentation gates, canonical zoning schema models, Alembic migration scaffold, sample parcel/zone lookup API, sample use/dimensional rule APIs, optional database-backed parcel/rule lookup records via CIVICZONE_PARCEL_RULE_DB_URL, citation-grounded sample Q&A, planner-escalation/staff-context samples, an accessible public sample UI at /civiczone, and civiccore==0.3.0 dependency alignment. It does not yet use live LLM calls, ingest live GIS data, make zoning determinations, or replace planner review.
+Current state: v1.0.0 product release. This repo ships a FastAPI service, health/root endpoints, documentation gates, canonical zoning schema models, Alembic migrations, deterministic parcel/zone lookup, cited use-rule lookup, cited dimensional-rule prechecks, resident Q&A with refusal and escalation rules, optional database-backed parcel/rule, resident-question ledger, and staff-workflow records through CIVICZONE_PARCEL_RULE_DB_URL, staff-only precedent protection, an accessible resident UI at /civiczone, adversarial local integration mocks, and civiccore==1.0.0 dependency alignment.
 
-Set CIVICZONE_PARCEL_RULE_DB_URL to enable persistent parcel, use-rule, and dimensional-rule lookup records. When unset, CivicZone continues to use deterministic in-memory sample data.
+Product boundaries:
+
+- CivicZone gives informational zoning context with citations.
+- CivicZone refuses or escalates zoning-determination, legal-advice, out-of-jurisdiction, stale-data, low-confidence, and uncited-answer requests.
+- CivicZone does not make zoning determinations, approve permits, replace planner review, or call live external vendor systems by default.
+- CivicZone integration behavior is validated with local adversarial mocks for Esri ArcGIS REST, GeoJSON fallback, CivicCode, CivicClerk, CivicPlan, CivicAccess, county assessor, and CKAN boundaries.
+
+Set CIVICZONE_PARCEL_RULE_DB_URL to enable persistent parcel, use-rule, dimensional-rule, resident-question ledger, and staff workflow records. When unset, CivicZone uses deterministic in-memory sample data and does not persist question or staff workflow rows.
+
+Staff workflow endpoints require trusted municipal access headers:
+
+- X-CivicZone-Principal
+- X-CivicZone-Role: planner, staff, or zoning_admin
 
 Developer quickstart:
 

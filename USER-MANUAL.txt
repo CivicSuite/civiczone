@@ -2,15 +2,15 @@
 
 ## For Residents And Municipal Decision-Makers
 
-CivicZone is planned to answer routine parcel-aware zoning questions with citations. It is not a zoning determination tool, not legal advice, and not a replacement for planner review.
+CivicZone answers routine parcel-aware zoning questions with citations. It is not a zoning determination tool, not legal advice, and not a replacement for planner review.
 
-Current state: `0.1.1` public UI foundation release plus production-depth parcel/rule persistence slice. The package, health endpoints, canonical zoning schema, Alembic migrations, sample parcel/zone lookup API, sample use/dimensional rule APIs, optional database-backed parcel/rule lookup records, citation-grounded sample Q&A, staff-context samples, an accessible public sample UI at `/civiczone`, and civiccore==0.3.0 dependency alignment exist. Live LLM calls, live GIS import, authentication/RBAC, official zoning determinations, and production workflow screens are not implemented yet.
+Current state: `1.0.0` product release. The package, health endpoints, canonical zoning schema, Alembic migrations, parcel/zone lookup API, use and dimensional rule APIs, optional database-backed parcel/rule lookup records, resident question ledger records, staff workflow records, citation-grounded resident Q&A, staff-only precedent protection, local adversarial integration mocks, an accessible resident UI at `/civiczone`, and civiccore==1.0.0 dependency alignment exist. CivicZone does not call live external systems by default, does not provide legal advice, and does not make official zoning determinations.
 
-The public sample UI shows a pre-filled parcel lookup for `123 Main St`, sample zone context, use and dimensional-rule cards, citation-grounded Q&A, and planner-escalation guidance. It is informational only: it is not legal advice, not a zoning determination, and not a replacement for municipal planning staff.
+The resident UI shows a pre-filled parcel lookup for `123 Main St`, zone context, use and dimensional-rule cards, citation-grounded Q&A, visible loading/success/empty/error/partial state guidance, and planner-escalation guidance. It is informational only: it is not legal advice, not a zoning determination, and not a replacement for municipal planning staff.
 
 ## For IT And Technical Staff
 
-CivicZone is a FastAPI Python package pinned to `civiccore==0.3.0`. The current runtime exposes:
+CivicZone is a FastAPI Python package pinned to `civiccore==1.0.0`. The current runtime exposes:
 
 - `GET /`
 - `GET /health`
@@ -18,14 +18,27 @@ CivicZone is a FastAPI Python package pinned to `civiccore==0.3.0`. The current 
 - Canonical SQLAlchemy models for zones, overlays, parcels, use rules, dimensional rules, citations, precedents, interpretation notes, and zone questions.
 - Alembic migration `civiczone_0001_schema`.
 - Alembic migration `civiczone_0002_parcel_rules` for optional parcel/rule lookup records.
+- Alembic migration `civiczone_0003_question_ledger` for optional resident question ledger records.
 - `POST /api/v1/civiczone/parcels/lookup` for sample parcel lookup.
 - `POST /api/v1/civiczone/rules/use` for sample use status.
 - `POST /api/v1/civiczone/rules/dimensional` for sample dimensional rules.
 - `POST /api/v1/civiczone/questions/answer` for citation-grounded sample questions.
 - `POST /api/v1/civiczone/planner-review/classify` for sample escalation classification.
-- `GET /api/v1/civiczone/staff/precedents/{precedent_id}` for staff-only sample context.
+- `GET /api/v1/civiczone/staff/precedents/{precedent_id}` for staff-only context.
+- `POST /api/v1/civiczone/staff/questions/answer` for staff Q&A with citations.
+- `POST /api/v1/civiczone/staff/ambiguity-reviews` and related update/list endpoints.
+- `GET /api/v1/civiczone/staff/questions/analytics` for high-volume question analytics.
+- `POST /api/v1/civiczone/staff/reports/outline` for staff-report outline support.
+- `POST /api/v1/civiczone/staff/flagged-answers` and `/improve` for staff answer review.
 
-Set CIVICZONE_PARCEL_RULE_DB_URL to persist parcel, use-rule, and dimensional-rule lookup data. Leave it unset for deterministic in-memory sample data during local development and documentation examples.
+Set CIVICZONE_PARCEL_RULE_DB_URL to persist parcel, use-rule, dimensional-rule, resident-question ledger, and staff workflow data. Leave it unset for deterministic in-memory sample data during local development and documentation examples.
+
+Staff workflow endpoints require trusted municipal access headers:
+
+- X-CivicZone-Principal
+- X-CivicZone-Role: planner, staff, or zoning_admin
+
+Resident question text is persisted as raw operational input when the ledger is configured. Do not enter sensitive personal details in sample Q&A, and apply the city's retention/privacy policy before sharing ledger records outside staff operations.
 
 Run local verification with:
 
@@ -40,9 +53,10 @@ bash scripts/verify-release.sh
 ```mermaid
 flowchart LR
   Resident["Resident or planner"] --> CivicZone["CivicZone"]
-CivicZone --> CivicCore["CivicCore v0.3.0"]
-CivicZone --> CivicCode["CivicCode v0.1.1"]
-  CivicZone -. future .-> GIS["GIS / assessor sources"]
+CivicZone --> CivicCore["CivicCore v1.0.0"]
+CivicZone --> CivicCode["CivicCode v1.0.0+"]
+CivicZone --> LocalMocks["Adversarial local integration mocks"]
+CivicZone -. configured .-> GIS["Local GIS / assessor datasets"]
 ```
 
 CivicZone depends on CivicCore and CivicCode. CivicCore does not depend on CivicZone.

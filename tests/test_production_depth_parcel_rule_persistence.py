@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 import civiczone.main as main_module
 from civiczone.main import app
 from civiczone.parcel_lookup import ParcelLookupRepository
-from civiczone.rule_lookup import RuleLookupRepository
+from civiczone.rule_lookup import DIMENSIONAL_RULES, RuleLookupRepository, USE_RULES
 
 
 client = TestClient(app)
@@ -31,6 +31,10 @@ def test_parcel_and_rule_records_persist_seeded_lookup_data(tmp_path) -> None:
 def test_api_uses_configured_parcel_rule_database(monkeypatch, tmp_path) -> None:
     db_path = tmp_path / "api-parcel-rules.db"
     db_url = f"sqlite:///{db_path}"
+    seed_rules = RuleLookupRepository(db_url=db_url, seed_defaults=False)
+    seed_rules.seed_use_rules(USE_RULES.values())
+    seed_rules.seed_dimensional_rules(DIMENSIONAL_RULES.values())
+    seed_rules.engine.dispose()
     monkeypatch.setenv("CIVICZONE_PARCEL_RULE_DB_URL", db_url)
 
     try:
@@ -53,6 +57,9 @@ def test_api_uses_configured_parcel_rule_database(monkeypatch, tmp_path) -> None
         if main_module._rule_lookup_repository is not None:
             main_module._rule_lookup_repository.engine.dispose()
             main_module._rule_lookup_repository = None
+        if main_module._question_ledger_repository is not None:
+            main_module._question_ledger_repository.engine.dispose()
+            main_module._question_ledger_repository = None
         main_module._parcel_rule_db_url = None
 
     assert parcel_response.status_code == 200
@@ -86,4 +93,7 @@ def test_repository_cache_resets_when_database_url_changes(monkeypatch, tmp_path
         if main_module._rule_lookup_repository is not None:
             main_module._rule_lookup_repository.engine.dispose()
             main_module._rule_lookup_repository = None
+        if main_module._question_ledger_repository is not None:
+            main_module._question_ledger_repository.engine.dispose()
+            main_module._question_ledger_repository = None
         main_module._parcel_rule_db_url = None

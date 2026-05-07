@@ -54,6 +54,8 @@ def test_alembic_scaffold_exists_and_uses_separate_version_table() -> None:
         ROOT / "civiczone" / "migrations" / "env.py",
         ROOT / "civiczone" / "migrations" / "versions" / "civiczone_0001_schema.py",
         ROOT / "civiczone" / "migrations" / "versions" / "civiczone_0002_parcel_rule_lookup_records.py",
+        ROOT / "civiczone" / "migrations" / "versions" / "civiczone_0003_question_ledger.py",
+        ROOT / "civiczone" / "migrations" / "versions" / "civiczone_0004_staff_workflows.py",
     ]
     for path in expected:
         assert path.exists()
@@ -90,6 +92,23 @@ def test_parcel_rule_lookup_records_migration_declares_runtime_tables() -> None:
     assert '"parcel_lookup_records"' in migration_text
     assert '"use_rule_lookup_records"' in migration_text
     assert '"dimensional_rule_lookup_records"' in migration_text
+    assert "postgresql.JSONB()" in migration_text
+
+
+def test_staff_workflows_migration_declares_runtime_tables() -> None:
+    migration_text = (
+        ROOT
+        / "civiczone"
+        / "migrations"
+        / "versions"
+        / "civiczone_0004_staff_workflows.py"
+    ).read_text(encoding="utf-8")
+
+    assert 'revision = "civiczone_0004_staff_workflows"' in migration_text
+    assert 'down_revision = "civiczone_0003_question_ledger"' in migration_text
+    assert '"staff_question_records"' in migration_text
+    assert '"staff_ambiguity_review_items"' in migration_text
+    assert '"staff_flagged_answer_reviews"' in migration_text
     assert "postgresql.JSONB()" in migration_text
 
 
@@ -165,10 +184,14 @@ def test_alembic_command_upgrades_real_pgvector_database(monkeypatch: pytest.Mon
             )
 
         assert civiccore_revision == "civiccore_0002_llm"
-        assert civiczone_revision == "civiczone_0002_parcel_rules"
+        assert civiczone_revision == "civiczone_0004_staff_workflows"
         assert civiczone_tables == set(CANONICAL_TABLES) | {
             "dimensional_rule_lookup_records",
             "parcel_lookup_records",
+            "staff_ambiguity_review_items",
+            "staff_flagged_answer_reviews",
+            "staff_question_records",
+            "zone_question_ledger_records",
             "use_rule_lookup_records",
         }
     finally:

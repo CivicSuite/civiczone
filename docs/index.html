@@ -20,12 +20,12 @@
 <main>
   <p class="eyebrow">CivicSuite / CivicZone</p>
   <h1>Zoning answers with citations, not guesses.</h1>
-  <p class="lede">CivicZone is the planned parcel-aware zoning and land-use module for CivicSuite. It will help residents and planners find routine zoning information while escalating actual determinations to staff.</p>
+  <p class="lede">CivicZone is the parcel-aware zoning and land-use module for CivicSuite. It helps residents and planners find routine zoning information while escalating actual determinations to staff.</p>
 
   <section class="panel">
-    <span class="badge">v0.1.1 public UI foundation + parcel/rule persistence</span>
+    <span class="badge">v1.0.0 cited zoning lookup + staff escalation</span>
     <h2>Current State</h2>
-    <p>The package shell, root endpoint, health endpoint, documentation gates, canonical zoning schema, Alembic migration scaffold, sample parcel/zone lookup API, sample use/dimensional rule APIs, optional database-backed parcel/rule lookup records via <code>CIVICZONE_PARCEL_RULE_DB_URL</code>, citation-grounded sample Q&amp;A, staff-context samples, and accessible public sample UI exist. Live GIS ingestion, live LLM calls, authentication/RBAC, official zoning determinations, and planner review queues are not implemented yet.</p>
+    <p>The FastAPI service, root endpoint, health endpoint, documentation gates, canonical zoning schema, Alembic migrations, parcel/zone lookup API, use and dimensional rule APIs, optional database-backed parcel/rule lookup records, resident question ledger, and staff workflow records via <code>CIVICZONE_PARCEL_RULE_DB_URL</code>, citation-grounded resident Q&amp;A, staff-only precedent protection, local adversarial integration mocks, and accessible resident UI exist. CivicZone does not make official zoning determinations, provide legal advice, or call live external vendor systems by default.</p>
   </section>
 
   <section class="panel">
@@ -35,6 +35,7 @@
       <li>Answer routine questions with source-backed informational language.</li>
       <li>Refuse or escalate zoning-determination requests.</li>
       <li>Keep staff-only precedent context out of resident-facing output.</li>
+      <li>Validate integration boundaries with local adversarial mocks instead of external deployment proofs.</li>
     </ul>
   </section>
 

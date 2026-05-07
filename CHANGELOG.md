@@ -4,11 +4,31 @@ All notable changes to CivicZone will be documented in this file.
 
 The format follows Keep a Changelog, and this project follows Semantic Versioning.
 
-## [Unreleased]
+## [1.0.0] - 2026-05-07
+
+### Added
+
+- v1 resident zoning Q&A runtime with deterministic cited answers, refusal and escalation reasons, confidence metadata, and actionable next steps.
+- Staff workflow APIs for planner Q&A, ambiguity review queue, high-volume question analytics, staff-report outline support, and flagged-answer review.
+- Database-backed staff workflow records for planner questions, ambiguity queue items, and flagged answer reviews when `CIVICZONE_PARCEL_RULE_DB_URL` is configured.
+- Local adversarial integration mocks for Esri ArcGIS REST, GeoJSON fallback, CivicCode, CivicClerk, CivicPlan, CivicAccess, county assessor, and CKAN boundary validation.
+- Resident UI copy and visible state guidance for loading, success, empty, error, and partial outcomes.
+
+### Changed
+
+- Promoted CivicZone release surfaces from `0.1.2` to `1.0.0`.
+- Updated runtime and documentation boundaries to describe the v1 product without claiming legal advice, official zoning determinations, or live external vendor calls by default.
+
+## [0.1.2] - 2026-05-07
 
 ### Added
 
 - Production-depth parcel/rule lookup persistence slice with `CIVICZONE_PARCEL_RULE_DB_URL`, seeded sample parcel/use/dimensional records, and Alembic revision `civiczone_0002_parcel_rules`.
+- Production-depth resident question ledger persistence for deterministic cited Q&A, including Alembic revision `civiczone_0003_question_ledger`.
+
+### Changed
+
+- Aligned CivicZone's release gate, CI install path, docs, and health-contract test with the published `civiccore==1.0.0` wheel before the next production-depth sprint.
 
 ## [0.1.1] - 2026-04-28
 
