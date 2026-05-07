@@ -10,6 +10,10 @@ The format follows Keep a Changelog, and this project follows Semantic Versionin
 
 - Production-depth parcel/rule lookup persistence slice with `CIVICZONE_PARCEL_RULE_DB_URL`, seeded sample parcel/use/dimensional records, and Alembic revision `civiczone_0002_parcel_rules`.
 
+### Changed
+
+- Aligned CivicZone's release gate, CI install path, docs, and health-contract test with the published `civiccore==1.0.0` wheel before the next production-depth sprint.
+
 ## [0.1.1] - 2026-04-28
 
 ### Changed

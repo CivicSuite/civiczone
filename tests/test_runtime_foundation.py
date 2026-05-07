@@ -32,4 +32,4 @@ def test_health_endpoint_reports_versions() -> None:
     assert payload["status"] == "ok"
     assert payload["service"] == "civiczone"
     assert payload["version"] == "0.1.1"
-    assert payload["civiccore_version"] == "0.3.0"
+    assert payload["civiccore_version"] == "1.0.0"
