@@ -48,6 +48,7 @@ _rule_lookup_repository: RuleLookupRepository | None = None
 _question_ledger_repository: ZoneQuestionLedgerRepository | None = None
 _parcel_rule_db_url: str | None = None
 _staff_workflow_store = StaffWorkflowStore()
+_staff_workflow_db_url: str | None = None
 
 
 @dataclass(frozen=True)
@@ -291,7 +292,7 @@ def staff_question_answer(
     request: StaffQuestionAnswerRequest,
     principal: StaffPrincipal = Depends(_require_staff_access),
 ) -> dict[str, object]:
-    record = _staff_workflow_store.answer_planner_question(
+    record = _get_staff_workflow_store().answer_planner_question(
         zone_code=request.zone_code,
         question_text=request.question,
         created_by=principal.subject or "staff",
@@ -304,7 +305,7 @@ def create_ambiguity_review(
     request: AmbiguityReviewCreateRequest,
     principal: StaffPrincipal = Depends(_require_staff_access),
 ) -> dict[str, object]:
-    item = _staff_workflow_store.create_queue_item(
+    item = _get_staff_workflow_store().create_queue_item(
         zone_code=request.zone_code,
         question_text=request.question,
         reason=request.reason,
@@ -319,7 +320,10 @@ def list_ambiguity_reviews(
     _principal: StaffPrincipal = Depends(_require_staff_access),
 ) -> dict[str, object]:
     return {
-        "items": [_queue_item_payload(item) for item in _staff_workflow_store.list_queue_items(status=status)],
+        "items": [
+            _queue_item_payload(item)
+            for item in _get_staff_workflow_store().list_queue_items(status=status)
+        ],
         "visibility": "staff_only",
     }
 
@@ -331,7 +335,7 @@ def update_ambiguity_review(
     _principal: StaffPrincipal = Depends(_require_staff_access),
 ) -> dict[str, object]:
     try:
-        item = _staff_workflow_store.update_queue_item(
+        item = _get_staff_workflow_store().update_queue_item(
             item_id=item_id,
             status=request.status,
             assigned_to=request.assigned_to,
@@ -358,7 +362,7 @@ def staff_question_analytics(
     high_volume_threshold: int = 2,
     _principal: StaffPrincipal = Depends(_require_staff_access),
 ) -> dict[str, object]:
-    analytics = _staff_workflow_store.analytics(high_volume_threshold=high_volume_threshold)
+    analytics = _get_staff_workflow_store().analytics(high_volume_threshold=high_volume_threshold)
     return {
         "total_questions": analytics.total_questions,
         "by_status": analytics.by_status,
@@ -382,7 +386,7 @@ def staff_report_outline(
     request: StaffReportOutlineRequest,
     principal: StaffPrincipal = Depends(_require_staff_access),
 ) -> dict[str, object]:
-    outline = _staff_workflow_store.draft_report_outline(
+    outline = _get_staff_workflow_store().draft_report_outline(
         title=request.title,
         question_ids=request.question_ids,
         queue_item_ids=request.queue_item_ids,
@@ -406,7 +410,7 @@ def create_flagged_answer_review(
     request: FlaggedAnswerCreateRequest,
     principal: StaffPrincipal = Depends(_require_staff_access),
 ) -> dict[str, object]:
-    review = _staff_workflow_store.flag_answer(
+    review = _get_staff_workflow_store().flag_answer(
         zone_code=request.zone_code,
         question_text=request.question,
         original_answer=request.original_answer,
@@ -423,7 +427,7 @@ def improve_flagged_answer_review(
     request: FlaggedAnswerImproveRequest,
     principal: StaffPrincipal = Depends(_require_staff_access),
 ) -> dict[str, object]:
-    review = _staff_workflow_store.improve_flagged_answer(
+    review = _get_staff_workflow_store().improve_flagged_answer(
         review_id=review_id,
         improved_answer=request.improved_answer,
         improvement_notes=request.improvement_notes,
@@ -481,6 +485,20 @@ def _get_question_ledger_repository() -> ZoneQuestionLedgerRepository:
     if _question_ledger_repository is None:
         _question_ledger_repository = ZoneQuestionLedgerRepository(db_url=db_url)
     return _question_ledger_repository
+
+
+def _get_staff_workflow_store() -> StaffWorkflowStore:
+    global _staff_workflow_db_url, _staff_workflow_store
+    db_url = _parcel_rule_database_url()
+    if db_url is None:
+        if _staff_workflow_db_url is not None:
+            _reset_staff_workflow_store()
+        return _staff_workflow_store
+    if db_url != _staff_workflow_db_url:
+        _dispose_repository(_staff_workflow_store)
+        _staff_workflow_store = StaffWorkflowStore(db_url=db_url)
+        _staff_workflow_db_url = db_url
+    return _staff_workflow_store
 
 
 def _lookup_parcel(*, parcel_number: str | None = None, address: str | None = None):
@@ -581,8 +599,10 @@ def _flagged_answer_payload(review) -> dict[str, object]:
 
 
 def _reset_staff_workflow_store() -> None:
-    global _staff_workflow_store
+    global _staff_workflow_db_url, _staff_workflow_store
+    _dispose_repository(_staff_workflow_store)
     _staff_workflow_store = StaffWorkflowStore()
+    _staff_workflow_db_url = None
 
 
 def _dispose_repository(repository: object | None) -> None:
@@ -599,3 +619,4 @@ def _reset_configured_repositories() -> None:
     _parcel_lookup_repository = None
     _rule_lookup_repository = None
     _question_ledger_repository = None
+    _reset_staff_workflow_store()

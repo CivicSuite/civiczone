@@ -40,6 +40,7 @@ required=(
   "civiczone/migrations/versions/civiczone_0001_schema.py"
   "civiczone/migrations/versions/civiczone_0002_parcel_rule_lookup_records.py"
   "civiczone/migrations/versions/civiczone_0003_question_ledger.py"
+  "civiczone/migrations/versions/civiczone_0004_staff_workflows.py"
   "MILESTONE_7_DONE.md"
   "MILESTONE_8_DONE.md"
   "PRODUCTION_DEPTH_PARCEL_RULE_PERSISTENCE_DONE.md"

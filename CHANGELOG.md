@@ -10,6 +10,7 @@ The format follows Keep a Changelog, and this project follows Semantic Versionin
 
 - v1 resident zoning Q&A runtime with deterministic cited answers, refusal and escalation reasons, confidence metadata, and actionable next steps.
 - Staff workflow APIs for planner Q&A, ambiguity review queue, high-volume question analytics, staff-report outline support, and flagged-answer review.
+- Database-backed staff workflow records for planner questions, ambiguity queue items, and flagged answer reviews when `CIVICZONE_PARCEL_RULE_DB_URL` is configured.
 - Local adversarial integration mocks for Esri ArcGIS REST, GeoJSON fallback, CivicCode, CivicClerk, CivicPlan, CivicAccess, county assessor, and CKAN boundary validation.
 - Resident UI copy and visible state guidance for loading, success, empty, error, and partial outcomes.
 

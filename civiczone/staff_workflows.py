@@ -6,6 +6,9 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import uuid4
 
+import sqlalchemy as sa
+from sqlalchemy import Engine, create_engine
+
 from civiczone.qa import ZoneAnswer, answer_zoning_question
 from civiczone.rule_lookup import DISCLAIMER
 
@@ -14,6 +17,64 @@ STAFF_VISIBILITY = "staff_only"
 OPEN_QUEUE_STATUSES = {"open", "in_review"}
 RESOLVED_QUEUE_STATUSES = {"resolved", "closed"}
 QUEUE_STATUSES = OPEN_QUEUE_STATUSES | RESOLVED_QUEUE_STATUSES
+
+
+metadata = sa.MetaData()
+
+staff_question_records = sa.Table(
+    "staff_question_records",
+    metadata,
+    sa.Column("id", sa.String(36), primary_key=True),
+    sa.Column("zone_code", sa.String(80), nullable=False),
+    sa.Column("question_text", sa.Text(), nullable=False),
+    sa.Column("status", sa.String(80), nullable=False),
+    sa.Column("answer_text", sa.Text(), nullable=False),
+    sa.Column("citations", sa.JSON(), nullable=False),
+    sa.Column("code_cross_references", sa.JSON(), nullable=False),
+    sa.Column("created_by", sa.String(255), nullable=False),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("visibility", sa.String(80), nullable=False),
+    sa.Column("disclaimer", sa.Text(), nullable=False),
+    schema="civiczone",
+)
+
+staff_ambiguity_review_items = sa.Table(
+    "staff_ambiguity_review_items",
+    metadata,
+    sa.Column("id", sa.String(36), primary_key=True),
+    sa.Column("zone_code", sa.String(80), nullable=False),
+    sa.Column("question_text", sa.Text(), nullable=False),
+    sa.Column("reason", sa.Text(), nullable=False),
+    sa.Column("status", sa.String(80), nullable=False),
+    sa.Column("assigned_to", sa.String(255), nullable=True),
+    sa.Column("resolution", sa.Text(), nullable=True),
+    sa.Column("source_question_id", sa.String(36), nullable=True),
+    sa.Column("created_by", sa.String(255), nullable=False),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("visibility", sa.String(80), nullable=False),
+    schema="civiczone",
+)
+
+staff_flagged_answer_reviews = sa.Table(
+    "staff_flagged_answer_reviews",
+    metadata,
+    sa.Column("id", sa.String(36), primary_key=True),
+    sa.Column("zone_code", sa.String(80), nullable=False),
+    sa.Column("question_text", sa.Text(), nullable=False),
+    sa.Column("original_answer", sa.Text(), nullable=False),
+    sa.Column("flag_reason", sa.Text(), nullable=False),
+    sa.Column("citations", sa.JSON(), nullable=False),
+    sa.Column("status", sa.String(80), nullable=False),
+    sa.Column("improved_answer", sa.Text(), nullable=True),
+    sa.Column("improvement_notes", sa.Text(), nullable=True),
+    sa.Column("reviewed_by", sa.String(255), nullable=True),
+    sa.Column("created_by", sa.String(255), nullable=False),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("visibility", sa.String(80), nullable=False),
+    schema="civiczone",
+)
 
 
 @dataclass(frozen=True)
@@ -104,12 +165,23 @@ class FlaggedAnswerReview:
 
 
 class StaffWorkflowStore:
-    """In-process staff workflow data store for local v1 staff API behavior."""
+    """Staff workflow data store with optional SQLAlchemy-backed durability."""
 
-    def __init__(self) -> None:
+    def __init__(self, *, db_url: str | None = None, engine: Engine | None = None) -> None:
         self._questions: dict[str, StaffQuestionRecord] = {}
         self._queue: dict[str, AmbiguityReviewItem] = {}
         self._flagged_answers: dict[str, FlaggedAnswerReview] = {}
+        self.engine: Engine | None = None
+        if db_url is not None or engine is not None:
+            base_engine = engine or create_engine(db_url or "sqlite+pysqlite:///:memory:", future=True)
+            if base_engine.dialect.name == "sqlite":
+                self.engine = base_engine.execution_options(schema_translate_map={"civiczone": None})
+            else:
+                self.engine = base_engine
+                with self.engine.begin() as connection:
+                    connection.execute(sa.text("CREATE SCHEMA IF NOT EXISTS civiczone"))
+            metadata.create_all(self.engine)
+            self._hydrate()
 
     def answer_planner_question(
         self,
@@ -131,6 +203,7 @@ class StaffWorkflowStore:
             created_at=datetime.now(UTC),
         )
         self._questions[record.id] = record
+        self._persist_question(record)
         if answer.status in {"escalate", "refused"}:
             self.create_queue_item(
                 zone_code=record.zone_code,
@@ -165,6 +238,7 @@ class StaffWorkflowStore:
             updated_at=now,
         )
         self._queue[item.id] = item
+        self._persist_queue_item(item)
         return item
 
     def list_queue_items(self, *, status: str | None = None) -> tuple[AmbiguityReviewItem, ...]:
@@ -202,6 +276,7 @@ class StaffWorkflowStore:
             updated_at=datetime.now(UTC),
         )
         self._queue[item_id] = updated
+        self._persist_queue_item(updated)
         return updated
 
     def analytics(self, *, high_volume_threshold: int = 2) -> StaffQuestionAnalytics:
@@ -310,6 +385,7 @@ class StaffWorkflowStore:
             updated_at=now,
         )
         self._flagged_answers[review.id] = review
+        self._persist_flagged_answer(review)
         return review
 
     def improve_flagged_answer(
@@ -339,7 +415,93 @@ class StaffWorkflowStore:
             updated_at=datetime.now(UTC),
         )
         self._flagged_answers[review_id] = updated
+        self._persist_flagged_answer(updated)
         return updated
+
+    def _hydrate(self) -> None:
+        if self.engine is None:
+            return
+        with self.engine.begin() as connection:
+            question_rows = connection.execute(
+                sa.select(staff_question_records).order_by(staff_question_records.c.created_at)
+            ).mappings()
+            queue_rows = connection.execute(
+                sa.select(staff_ambiguity_review_items).order_by(
+                    staff_ambiguity_review_items.c.created_at
+                )
+            ).mappings()
+            flagged_rows = connection.execute(
+                sa.select(staff_flagged_answer_reviews).order_by(
+                    staff_flagged_answer_reviews.c.created_at
+                )
+            ).mappings()
+            self._questions = {
+                row["id"]: _question_from_row(dict(row))
+                for row in question_rows
+            }
+            self._queue = {
+                row["id"]: _queue_item_from_row(dict(row))
+                for row in queue_rows
+            }
+            self._flagged_answers = {
+                row["id"]: _flagged_answer_from_row(dict(row))
+                for row in flagged_rows
+            }
+
+    def _persist_question(self, record: StaffQuestionRecord) -> None:
+        if self.engine is None:
+            return
+        with self.engine.begin() as connection:
+            existing = connection.execute(
+                sa.select(staff_question_records.c.id).where(staff_question_records.c.id == record.id)
+            ).first()
+            values = _question_values(record)
+            if existing is None:
+                connection.execute(staff_question_records.insert().values(**values))
+            else:
+                connection.execute(
+                    staff_question_records.update()
+                    .where(staff_question_records.c.id == record.id)
+                    .values(**values)
+                )
+
+    def _persist_queue_item(self, item: AmbiguityReviewItem) -> None:
+        if self.engine is None:
+            return
+        with self.engine.begin() as connection:
+            existing = connection.execute(
+                sa.select(staff_ambiguity_review_items.c.id).where(
+                    staff_ambiguity_review_items.c.id == item.id
+                )
+            ).first()
+            values = _queue_item_values(item)
+            if existing is None:
+                connection.execute(staff_ambiguity_review_items.insert().values(**values))
+            else:
+                connection.execute(
+                    staff_ambiguity_review_items.update()
+                    .where(staff_ambiguity_review_items.c.id == item.id)
+                    .values(**values)
+                )
+
+    def _persist_flagged_answer(self, review: FlaggedAnswerReview) -> None:
+        if self.engine is None:
+            return
+        with self.engine.begin() as connection:
+            existing = connection.execute(
+                sa.select(staff_flagged_answer_reviews.c.id).where(
+                    staff_flagged_answer_reviews.c.id == review.id
+                )
+            ).first()
+            values = _flagged_answer_values(review)
+            if existing is None:
+                connection.execute(staff_flagged_answer_reviews.insert().values(**values))
+            else:
+                connection.execute(
+                    staff_flagged_answer_reviews.update()
+                    .where(staff_flagged_answer_reviews.c.id == review.id)
+                    .values(**values)
+                )
 
 
 def _cross_references_from_answer(answer: ZoneAnswer) -> tuple[CodeCrossReference, ...]:
@@ -355,3 +517,138 @@ def _cross_references_from_answer(answer: ZoneAnswer) -> tuple[CodeCrossReferenc
 
 def _normalize_question(question_text: str) -> str:
     return " ".join(question_text.casefold().split())
+
+
+def _cross_reference_payload(reference: CodeCrossReference) -> dict[str, str]:
+    return {
+        "citation": reference.citation,
+        "source": reference.source,
+        "relevance": reference.relevance,
+    }
+
+
+def _cross_reference_from_payload(payload: dict[str, object]) -> CodeCrossReference:
+    return CodeCrossReference(
+        citation=str(payload["citation"]),
+        source=str(payload["source"]),
+        relevance=str(payload["relevance"]),
+    )
+
+
+def _question_values(record: StaffQuestionRecord) -> dict[str, object]:
+    return {
+        "id": record.id,
+        "zone_code": record.zone_code,
+        "question_text": record.question_text,
+        "status": record.status,
+        "answer_text": record.answer_text,
+        "citations": list(record.citations),
+        "code_cross_references": [
+            _cross_reference_payload(reference) for reference in record.code_cross_references
+        ],
+        "created_by": record.created_by,
+        "created_at": record.created_at,
+        "visibility": record.visibility,
+        "disclaimer": record.disclaimer,
+    }
+
+
+def _queue_item_values(item: AmbiguityReviewItem) -> dict[str, object]:
+    return {
+        "id": item.id,
+        "zone_code": item.zone_code,
+        "question_text": item.question_text,
+        "reason": item.reason,
+        "status": item.status,
+        "assigned_to": item.assigned_to,
+        "resolution": item.resolution,
+        "source_question_id": item.source_question_id,
+        "created_by": item.created_by,
+        "created_at": item.created_at,
+        "updated_at": item.updated_at,
+        "visibility": item.visibility,
+    }
+
+
+def _flagged_answer_values(review: FlaggedAnswerReview) -> dict[str, object]:
+    return {
+        "id": review.id,
+        "zone_code": review.zone_code,
+        "question_text": review.question_text,
+        "original_answer": review.original_answer,
+        "flag_reason": review.flag_reason,
+        "citations": list(review.citations),
+        "status": review.status,
+        "improved_answer": review.improved_answer,
+        "improvement_notes": review.improvement_notes,
+        "reviewed_by": review.reviewed_by,
+        "created_by": review.created_by,
+        "created_at": review.created_at,
+        "updated_at": review.updated_at,
+        "visibility": review.visibility,
+    }
+
+
+def _question_from_row(row: dict[str, object]) -> StaffQuestionRecord:
+    return StaffQuestionRecord(
+        id=str(row["id"]),
+        zone_code=str(row["zone_code"]),
+        question_text=str(row["question_text"]),
+        status=str(row["status"]),
+        answer_text=str(row["answer_text"]),
+        citations=tuple(row["citations"]),  # type: ignore[arg-type]
+        code_cross_references=tuple(
+            _cross_reference_from_payload(payload)
+            for payload in row["code_cross_references"]  # type: ignore[union-attr]
+        ),
+        created_by=str(row["created_by"]),
+        created_at=row["created_at"],  # type: ignore[arg-type]
+        visibility=str(row["visibility"]),
+        disclaimer=str(row["disclaimer"]),
+    )
+
+
+def _queue_item_from_row(row: dict[str, object]) -> AmbiguityReviewItem:
+    return AmbiguityReviewItem(
+        id=str(row["id"]),
+        zone_code=str(row["zone_code"]),
+        question_text=str(row["question_text"]),
+        reason=str(row["reason"]),
+        status=str(row["status"]),
+        assigned_to=row["assigned_to"] if row["assigned_to"] is None else str(row["assigned_to"]),
+        resolution=row["resolution"] if row["resolution"] is None else str(row["resolution"]),
+        source_question_id=(
+            row["source_question_id"]
+            if row["source_question_id"] is None
+            else str(row["source_question_id"])
+        ),
+        created_by=str(row["created_by"]),
+        created_at=row["created_at"],  # type: ignore[arg-type]
+        updated_at=row["updated_at"],  # type: ignore[arg-type]
+        visibility=str(row["visibility"]),
+    )
+
+
+def _flagged_answer_from_row(row: dict[str, object]) -> FlaggedAnswerReview:
+    return FlaggedAnswerReview(
+        id=str(row["id"]),
+        zone_code=str(row["zone_code"]),
+        question_text=str(row["question_text"]),
+        original_answer=str(row["original_answer"]),
+        flag_reason=str(row["flag_reason"]),
+        citations=tuple(row["citations"]),  # type: ignore[arg-type]
+        status=str(row["status"]),
+        improved_answer=(
+            row["improved_answer"] if row["improved_answer"] is None else str(row["improved_answer"])
+        ),
+        improvement_notes=(
+            row["improvement_notes"]
+            if row["improvement_notes"] is None
+            else str(row["improvement_notes"])
+        ),
+        reviewed_by=row["reviewed_by"] if row["reviewed_by"] is None else str(row["reviewed_by"]),
+        created_by=str(row["created_by"]),
+        created_at=row["created_at"],  # type: ignore[arg-type]
+        updated_at=row["updated_at"],  # type: ignore[arg-type]
+        visibility=str(row["visibility"]),
+    )

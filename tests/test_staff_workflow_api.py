@@ -191,3 +191,63 @@ def test_flagged_answer_review_can_be_improved() -> None:
     assert improved.status_code == 200
     assert improved.json()["status"] == "improved"
     assert improved.json()["reviewed_by"] == "planner@example.gov"
+
+
+def test_staff_workflows_persist_when_database_is_configured(
+    tmp_path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    db_url = f"sqlite+pysqlite:///{tmp_path / 'staff-workflows.db'}"
+    monkeypatch.setenv("CIVICZONE_PARCEL_RULE_DB_URL", db_url)
+
+    answer = client.post(
+        "/api/v1/civiczone/staff/questions/answer",
+        json={"zone_code": "R-2", "question": "What is the front setback?"},
+        headers=STAFF_HEADERS,
+    )
+    queue = client.post(
+        "/api/v1/civiczone/staff/ambiguity-reviews",
+        json={
+            "zone_code": "R-2",
+            "question": "Does the overlay change the answer?",
+            "reason": "Potential overlay conflict.",
+        },
+        headers=STAFF_HEADERS,
+    )
+    flagged = client.post(
+        "/api/v1/civiczone/staff/flagged-answers",
+        json={
+            "zone_code": "R-2",
+            "question": "Can I build an ADU?",
+            "original_answer": "ADUs are always approved.",
+            "flag_reason": "Overstates approval.",
+            "citations": ["CMC 18.42.030"],
+        },
+        headers=STAFF_HEADERS,
+    )
+
+    assert answer.status_code == 200
+    assert queue.status_code == 200
+    assert flagged.status_code == 200
+
+    main_module._reset_staff_workflow_store()
+
+    analytics = client.get(
+        "/api/v1/civiczone/staff/questions/analytics?high_volume_threshold=1",
+        headers=STAFF_HEADERS,
+    )
+    listed = client.get("/api/v1/civiczone/staff/ambiguity-reviews", headers=STAFF_HEADERS)
+    improved = client.patch(
+        f"/api/v1/civiczone/staff/flagged-answers/{flagged.json()['id']}/improve",
+        json={
+            "improved_answer": "ADUs require conditional review before reliance.",
+            "improvement_notes": "Persisted review survived store reset.",
+        },
+        headers=STAFF_HEADERS,
+    )
+
+    assert analytics.status_code == 200
+    assert analytics.json()["total_questions"] == 1
+    assert listed.status_code == 200
+    assert listed.json()["items"][0]["id"] == queue.json()["id"]
+    assert improved.status_code == 200
+    assert improved.json()["status"] == "improved"

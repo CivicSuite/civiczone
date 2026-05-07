@@ -4,7 +4,7 @@
 
 CivicZone answers routine parcel-aware zoning questions with citations. It is not a zoning determination tool, not legal advice, and not a replacement for planner review.
 
-Current state: `1.0.0` product release. The package, health endpoints, canonical zoning schema, Alembic migrations, parcel/zone lookup API, use and dimensional rule APIs, optional database-backed parcel/rule lookup records, resident question ledger records, citation-grounded resident Q&A, staff workflow APIs, staff-only precedent protection, local adversarial integration mocks, an accessible resident UI at `/civiczone`, and `civiccore==1.0.0` dependency alignment exist. CivicZone does not call live external systems by default, does not provide legal advice, and does not make official zoning determinations.
+Current state: `1.0.0` product release. The package, health endpoints, canonical zoning schema, Alembic migrations, parcel/zone lookup API, use and dimensional rule APIs, optional database-backed parcel/rule lookup records, resident question ledger records, staff workflow records, citation-grounded resident Q&A, staff-only precedent protection, local adversarial integration mocks, an accessible resident UI at `/civiczone`, and `civiccore==1.0.0` dependency alignment exist. CivicZone does not call live external systems by default, does not provide legal advice, and does not make official zoning determinations.
 
 The resident UI shows a pre-filled parcel lookup for `123 Main St`, zone context, use and dimensional-rule cards, citation-grounded Q&A, visible loading/success/empty/error/partial state guidance, and planner-escalation guidance. It is informational only: it is not legal advice, not a zoning determination, and not a replacement for municipal planning staff.
 
@@ -31,7 +31,7 @@ CivicZone is a FastAPI Python package pinned to `civiccore==1.0.0`. The current 
 - `POST /api/v1/civiczone/staff/reports/outline` for staff-report outline support.
 - `POST /api/v1/civiczone/staff/flagged-answers` and `/improve` for staff answer review.
 
-Set `CIVICZONE_PARCEL_RULE_DB_URL` to persist parcel, use-rule, dimensional-rule, and resident-question ledger data. Leave it unset for deterministic in-memory sample data during local development and documentation examples.
+Set `CIVICZONE_PARCEL_RULE_DB_URL` to persist parcel, use-rule, dimensional-rule, resident-question ledger, and staff workflow data. Leave it unset for deterministic in-memory sample data during local development and documentation examples.
 
 Staff workflow endpoints require trusted municipal access headers:
 

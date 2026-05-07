@@ -18,8 +18,8 @@ Scope: CivicZone active module only.
 7. Code path narrated: resident asks an ADU question, CivicZone resolves a cited use rule, returns answer/citation/confidence/next step, records the configured ledger row, and displays the informational boundary in the UI.
 8. Render/data path proved: Playwright desktop and mobile walkthroughs saved screenshots and verified loading, success, empty, error, and partial state copy with zero browser console errors.
 9. Five-lens self-audit:
-   - Engineering: full tests passed; placeholder imports blocked; release route/docs mismatch fixed.
+   - Engineering: full tests passed; placeholder imports blocked; release route/docs mismatch fixed; release-gate staff-workflow durability finding fixed.
    - UX: desktop/mobile browser pass, keyboard focus, actionable empty/error/partial copy.
-   - QA: WSL `scripts/verify-release.sh` passed with 63 tests and v1 artifacts.
-   - Tests: targeted and full pytest runs pass; adversarial mock tests cover malformed, stale, spoofed, unavailable, and air-gap cases.
-   - Docs: README, changelog, user manual, security note, docs index, browser QA evidence, and release workflow updated.
+   - QA: WSL `scripts/verify-release.sh` passed with 65 tests and v1 artifacts.
+   - Tests: targeted and full pytest runs pass; adversarial mock tests cover malformed, stale, spoofed, unavailable, and air-gap cases; staff workflow persistence survives store reset when `CIVICZONE_PARCEL_RULE_DB_URL` is configured.
+   - Docs: README, changelog, user manual, security note, docs index, browser QA evidence, careful-coding evidence, and release workflow updated.
