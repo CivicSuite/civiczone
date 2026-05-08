@@ -33,7 +33,7 @@ Top cross-cutting finding: `ENG-001` staff workflow state was initially in-proce
 | required post-install steps | Checked | README/manual document editable install and verify command | none |
 | migrations | Checked | Docker pgvector Alembic test passed through `civiczone_0004_staff_workflows` | none |
 | seed/bootstrap requirements | Checked | deterministic sample data and optional DB config documented | none |
-| runtime dependency and model requirements | Checked | `civiccore==1.0.0`; no live LLM dependency | none |
+| runtime dependency and model requirements | Checked | Published CivicCore v1.0.0 release wheel; no live LLM dependency | none |
 | first-boot dependency truth | Checked | no DB required for sample mode; DB enables persistence | none |
 | secrets and credential handling | Checked | no hard-coded production secret found | none |
 | auth and session handling | Checked | staff endpoints require trusted principal and role headers | none |

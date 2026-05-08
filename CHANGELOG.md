@@ -6,6 +6,12 @@ The format follows Keep a Changelog, and this project follows Semantic Versionin
 
 ## [1.0.0] - 2026-05-07
 
+### Recovery note
+
+- The `1.0.0` label is under suite-wide release-recovery review. Treat it as
+  provisional until recovery gates, post-merge CI, and broader suite retest
+  evidence re-earn product-ready status.
+
 ### Added
 
 - v1 resident zoning Q&A runtime with deterministic cited answers, refusal and escalation reasons, confidence metadata, and actionable next steps.
@@ -16,7 +22,8 @@ The format follows Keep a Changelog, and this project follows Semantic Versionin
 
 ### Changed
 
-- Promoted CivicZone release surfaces from `0.1.2` to `1.0.0`.
+- Published CivicZone release surfaces at `1.0.0`; the label is provisional
+  during the later suite-wide release-recovery pass.
 - Updated runtime and documentation boundaries to describe the v1 product without claiming legal advice, official zoning determinations, or live external vendor calls by default.
 
 ## [0.1.2] - 2026-05-07
@@ -28,7 +35,7 @@ The format follows Keep a Changelog, and this project follows Semantic Versionin
 
 ### Changed
 
-- Aligned CivicZone's release gate, CI install path, docs, and health-contract test with the published `civiccore==1.0.0` wheel before the next production-depth sprint.
+- Aligned CivicZone's release gate, CI install path, docs, and health-contract test with the published CivicCore v1.0.0 wheel before the next production-depth sprint.
 
 ## [0.1.1] - 2026-04-28
 
