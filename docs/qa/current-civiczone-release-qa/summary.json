@@ -1,0 +1,58 @@
+[
+  {
+    "name": "resident-desktop",
+    "path": "/civiczone",
+    "width": 1440,
+    "height": 1000,
+    "expect": "Find zoning context before you ask for a ruling.",
+    "status": 200,
+    "overflow": false,
+    "focus": "Skip to main content",
+    "consoleMessages": [],
+    "pageErrors": [],
+    "screenshot": "docs\\qa\\current-civiczone-release-qa\\resident-desktop.png",
+    "passed": true
+  },
+  {
+    "name": "resident-mobile",
+    "path": "/civiczone",
+    "width": 390,
+    "height": 844,
+    "expect": "Accessory dwelling unit",
+    "status": 200,
+    "overflow": false,
+    "focus": "Skip to main content",
+    "consoleMessages": [],
+    "pageErrors": [],
+    "screenshot": "docs\\qa\\current-civiczone-release-qa\\resident-mobile.png",
+    "passed": true
+  },
+  {
+    "name": "docs-desktop",
+    "path": "/docs",
+    "width": 1440,
+    "height": 1000,
+    "expect": "CivicZone",
+    "status": 200,
+    "overflow": false,
+    "focus": "/openapi.json",
+    "consoleMessages": [],
+    "pageErrors": [],
+    "screenshot": "docs\\qa\\current-civiczone-release-qa\\docs-desktop.png",
+    "passed": true
+  },
+  {
+    "name": "health-json",
+    "path": "/health",
+    "width": 800,
+    "height": 600,
+    "expect": "civiczone",
+    "status": 200,
+    "overflow": false,
+    "focus": "DIV",
+    "consoleMessages": [],
+    "pageErrors": [],
+    "screenshot": "docs\\qa\\current-civiczone-release-qa\\health-json.png",
+    "passed": true
+  }
+]
