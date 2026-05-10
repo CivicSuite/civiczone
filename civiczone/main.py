@@ -66,7 +66,7 @@ def root() -> dict[str, str]:
         "version": __version__,
         "status": "v1 parcel-aware zoning Q&A runtime",
         "message": (
-            "CivicZone v1.0.0 provides deterministic parcel lookup, cited use-rule lookup, cited dimensional prechecks, "
+            "CivicZone v0.2.0 provides deterministic parcel lookup, cited use-rule lookup, cited dimensional prechecks, "
             "resident zoning Q&A with refusal and escalation rules, staff workflow APIs, optional database-backed parcel/rule and question-ledger records, "
             "canonical zoning schema migrations, adversarial local integration mocks, and an accessible resident UI. "
             "It does not make zoning determinations, give legal advice, replace planner review, or call live external systems by default."

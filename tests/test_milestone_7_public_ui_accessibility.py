@@ -18,7 +18,7 @@ def test_public_ui_route_returns_accessible_html() -> None:
     assert '<main id="main" tabindex="-1">' in text
     assert "aria-label=\"Current product state\"" in text
     assert "aria-live=\"polite\"" in text
-    assert "v1.0.0 cited zoning lookup" in text
+    assert "v0.2.0 cited zoning lookup" in text
     assert "<button" not in text
 
 

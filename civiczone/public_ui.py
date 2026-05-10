@@ -179,7 +179,7 @@ def render_public_lookup_page() -> str:
   <p class="lede">CivicZone helps residents and staff inspect parcel zoning context, cited use rules, dimensional standards, and escalation paths without turning informational guidance into an official determination.</p>
   <div class="banner" aria-label="Current product state">
     <div>
-      <span class="badge">v1.0.0 cited zoning lookup + staff escalation</span>
+      <span class="badge">v0.2.0 cited zoning lookup + staff escalation</span>
       <p><strong>Available now:</strong> parcel lookup, zone and overlay context, cited use and dimensional rule cards, deterministic resident Q&amp;A, staff escalation, optional local persistence, staff workflow APIs, and local adversarial integration validation.</p>
     </div>
     <a href="/docs" aria-label="Open API documentation">API docs</a>
