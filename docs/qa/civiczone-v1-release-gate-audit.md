@@ -1,4 +1,4 @@
-# CivicZone v1.0.0 Release-Gate Audit
+# CivicZone v0.2.0 Release-Gate Audit
 
 Date: 2026-05-07
 
@@ -15,7 +15,7 @@ Date: 2026-05-07
 - Runtime sign-off confidence: High
 - CI/workflow posture: `verify.yml` runs `scripts/verify-release.sh`; `release.yml` publishes v-tag artifacts
 
-Real state: CivicZone v1.0.0 now provides cited parcel-aware zoning lookup, resident Q&A with refusal/escalation, staff workflow APIs, local adversarial integration mocks, database-backed parcel/rule/question/staff workflow records when configured, and browser-verified resident UI. It does not provide legal advice, official zoning determinations, or live external vendor calls by default.
+Real state: CivicZone v0.2.0 now provides cited parcel-aware zoning lookup, resident Q&A with refusal/escalation, staff workflow APIs, local adversarial integration mocks, database-backed parcel/rule/question/staff workflow records when configured, and browser-verified resident UI. It does not provide legal advice, official zoning determinations, or live external vendor calls by default.
 
 Top cross-cutting finding: `ENG-001` staff workflow state was initially in-process only. Fixed by adding database-backed staff question, ambiguity queue, and flagged-answer records plus migration and persistence tests.
 

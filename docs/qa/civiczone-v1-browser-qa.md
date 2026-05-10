@@ -1,4 +1,4 @@
-# CivicZone v1.0.0 Browser QA Evidence
+# CivicZone v0.2.0 Browser QA Evidence
 
 - desktop: 200 OK, screenshot=docs/qa/civiczone-v1-public-desktop.png, console_messages=0, focused=['Skip to main content', 'Open API documentation']
 - mobile: 200 OK, screenshot=docs/qa/civiczone-v1-public-mobile.png, console_messages=0, focused=['Skip to main content', 'Open API documentation']

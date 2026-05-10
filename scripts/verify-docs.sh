@@ -67,8 +67,8 @@ bad_markers=(
   "legal advice is available"
   "planner review queue is available"
   "staff-only precedent is public"
-  "v1.0.0 product release"
-  "1.0.0 product release"
+  "v0.2.0 recovery release"
+  "0.2.0 recovery release"
   "current product release"
 )
 
