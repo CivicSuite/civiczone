@@ -11,6 +11,12 @@ All notable changes to CivicZone will be documented in this file.
 
 The format follows Keep a Changelog, and this project follows Semantic Versioning.
 
+## [Unreleased]
+
+### Changed
+
+- feat(deps): bump civiccore pin to v1.0.1 (security hardening recovery patch)
+
 ## [1.0.0] - 2026-05-07
 
 ### Recovery note

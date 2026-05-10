@@ -22,9 +22,9 @@ def test_pyproject_uses_published_civiccore_release_wheel() -> None:
     assert data["tool"]["hatch"]["metadata"]["allow-direct-references"] is True
     assert (
         "civiccore @ https://github.com/CivicSuite/civiccore/releases/download/"
-        "v1.0/civiccore-1.0.0-py3-none-any.whl#sha256=92d3d9984e3b3651586a342503f0789464b7618a2a030fce91d736e199d696e0"
+        "v1.0.1/civiccore-1.0.1-py3-none-any.whl#sha256=561d7a8f73260d50de79351d330876d2cb3488c0e046a2888e82fe09d1e03969"
     ) in dependencies
-    assert "civiccore==1.0.0" not in dependencies
+    assert "civiccore==1.0.1" not in dependencies
 
 
 def test_root_endpoint_states_runtime_boundary() -> None:
@@ -50,7 +50,7 @@ def test_health_endpoint_reports_versions() -> None:
     assert payload["status"] == "ok"
     assert payload["service"] == "civiczone"
     assert payload["version"] == "0.2.0"
-    assert payload["civiccore_version"] == "1.0.0"
+    assert payload["civiccore_version"] == "1.0.1"
 
 
 def test_release_gate_prefers_native_unix_python_before_windows_launcher() -> None:
@@ -85,4 +85,3 @@ def test_current_docs_mark_v1_label_as_recovered_without_product_release_overcla
         assert "release-recovery" in lowered, path
         assert "provisional" not in lowered, path
         assert "product release" not in lowered, path
-
