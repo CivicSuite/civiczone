@@ -50,7 +50,7 @@ def test_health_endpoint_reports_versions() -> None:
     assert payload["status"] == "ok"
     assert payload["service"] == "civiczone"
     assert payload["version"] == "0.2.0"
-    assert payload["civiccore_version"] == "1.0.0"
+    assert payload["civiccore_version"] == "1.0.1"
 
 
 def test_release_gate_prefers_native_unix_python_before_windows_launcher() -> None:
