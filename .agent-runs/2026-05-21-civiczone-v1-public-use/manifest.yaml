@@ -1,0 +1,22 @@
+run_id: "2026-05-21-civiczone-v1-public-use"
+pipeline: "module-release"
+pipeline_version: "agent-pipeline-codex v0.9.0"
+goal: "Release CivicZone v1.0.0 as a public-use CivicSuite module with spec scope, UX QA, docs, tests, adversarial validation, installer/module-selection truth, PR/merge/tag/release, and CI evidence."
+active_module: "CivicZone"
+target_version: "1.0.0"
+source_of_truth:
+  - "C:\\Users\\scott\\OneDrive\\Desktop\\Claude\\ACTIVE_RELEASE_QUEUE.md"
+  - "C:\\Users\\scott\\OneDrive\\Desktop\\Claude\\CivicSuite-clerk-core-city-release\\docs\\CivicSuiteUnifiedSpec.md"
+  - "C:\\Users\\scott\\OneDrive\\Desktop\\Claude\\civiczone\\AGENTS.md"
+acceptance:
+  - "CivicZone version truth is 1.0.0 across code, docs, tests, release verifier, artifacts, tag, and suite truth."
+  - "CivicZone implements the required CivicSuiteUnifiedSpec section 10 public/staff workflows without making zoning determinations."
+  - "Resident and staff routes have desktop/mobile browser QA, console, keyboard/focus, copy, and loading/success/empty/error/partial evidence."
+  - "Local tests, lint/static checks, docs checks, release verifier, build artifacts, and SHA256SUMS pass."
+  - "Adversarial local integration mocks cover bad inputs, stale/missing data, spoofed roles/providers, unavailable dependencies, air-gap boundaries, and public/staff permission boundaries."
+  - "Release-gate audit has no unresolved Blocker or Critical findings."
+  - "CivicSuite installer/module-selection truth includes CivicZone 1.0.0 and passes live main verification after merge."
+platform_boundary:
+  linux: "full lifecycle evidence required where suite installer gates exercise lifecycle"
+  windows: "supported; archive/readiness and available matching-host evidence must be recorded honestly"
+  macos: "beta-level support unless a real matching-host lifecycle is proven; do not claim macOS lifecycle certification"

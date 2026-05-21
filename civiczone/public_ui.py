@@ -1,283 +1,355 @@
-"""Static public UI shell for CivicZone's resident zoning lookup surface."""
+"""Public resident UI for CivicZone."""
 
 from __future__ import annotations
 
 
 def render_public_lookup_page() -> str:
-    """Render the accessible public-facing CivicZone lookup page."""
+    """Render the browser-usable public CivicZone lookup page."""
 
     return """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CivicZone Public Lookup</title>
+<link rel="icon" href="data:,">
+<title>CivicZone Resident Lookup</title>
 <style>
   :root {
-    --ink: #17231d;
-    --muted: #5d675d;
-    --paper: #fffaf0;
-    --field: #f2ead8;
-    --moss: #385f4c;
-    --clay: #b2603f;
-    --gold: #d8b45b;
-    --line: #d7c8a8;
+    --bg: #f6f7f2;
+    --panel: #ffffff;
+    --ink: #16201b;
+    --muted: #58635d;
+    --line: #cfd8d1;
+    --field: #f9faf8;
+    --primary: #1e684f;
+    --primary-dark: #154836;
+    --warn: #9b4e2e;
+    --amber: #ad8127;
+    --blue: #355f8a;
   }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
   body {
     margin: 0;
-    font-family: "Aptos", "Segoe UI", sans-serif;
+    background: var(--bg);
     color: var(--ink);
-    background:
-      radial-gradient(circle at 12% 8%, rgba(216, 180, 91, .36), transparent 26rem),
-      radial-gradient(circle at 88% 0%, rgba(56, 95, 76, .22), transparent 28rem),
-      linear-gradient(135deg, #f8f1e4 0%, #efe1c8 100%);
+    font-family: "Segoe UI", Arial, sans-serif;
   }
-  a { color: #1f5b47; }
+  a { color: var(--primary-dark); }
   .skip-link {
     position: absolute;
     left: 1rem;
     top: -4rem;
     z-index: 10;
     background: var(--ink);
-    color: white;
+    color: #fff;
     padding: .7rem 1rem;
-    border-radius: 999px;
+    border-radius: 8px;
   }
   .skip-link:focus { top: 1rem; }
-  header, main, footer { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
-  header { padding: 48px 0 22px; }
-  .eyebrow {
-    margin: 0 0 12px;
-    color: var(--moss);
-    font-size: .78rem;
-    font-weight: 800;
-    letter-spacing: .18em;
-    text-transform: uppercase;
+  header, main, footer {
+    width: min(1180px, calc(100% - 32px));
+    margin: 0 auto;
   }
+  header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: end;
+    padding: 28px 0 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  h1, h2, h3, p { margin-top: 0; }
   h1 {
-    max-width: 870px;
-    margin: 0;
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: clamp(2.9rem, 8vw, 6.4rem);
-    line-height: .9;
-    letter-spacing: -.06em;
+    margin-bottom: .35rem;
+    font-size: clamp(1.9rem, 4vw, 3.2rem);
+    line-height: 1.05;
+    letter-spacing: 0;
   }
   .lede {
-    max-width: 820px;
-    margin: 22px 0 0;
-    color: #314137;
-    font-size: clamp(1.1rem, 2.4vw, 1.55rem);
+    max-width: 840px;
+    margin-bottom: 0;
+    color: var(--muted);
     line-height: 1.55;
-  }
-  .banner {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 1rem;
-    align-items: center;
-    margin: 26px 0 36px;
-    padding: 18px;
-    border: 1px solid var(--line);
-    border-radius: 24px;
-    background: rgba(255, 250, 240, .78);
-    box-shadow: 0 18px 42px rgba(55, 43, 22, .12);
   }
   .badge {
     display: inline-flex;
-    width: fit-content;
-    padding: .44rem .72rem;
-    border-radius: 999px;
-    background: var(--moss);
-    color: white;
-    font-weight: 800;
-    font-size: .82rem;
+    align-items: center;
+    min-height: 2.1rem;
+    padding: .35rem .65rem;
+    border: 1px solid #a9c6b9;
+    border-radius: 8px;
+    background: #e9f3ee;
+    color: var(--primary-dark);
+    font-weight: 700;
+    white-space: nowrap;
   }
-  .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 18px; }
-  .card {
-    grid-column: span 6;
+  main {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr);
+    gap: 18px;
+    padding: 20px 0 36px;
+  }
+  section, aside {
     min-width: 0;
-    padding: 24px;
     border: 1px solid var(--line);
-    border-radius: 28px;
-    background: rgba(255, 250, 240, .86);
-    box-shadow: 0 18px 40px rgba(55, 43, 22, .10);
+    border-radius: 8px;
+    background: var(--panel);
   }
-  .card.large { grid-column: span 12; }
-  h2, h3 { font-family: Georgia, "Times New Roman", serif; letter-spacing: -.03em; }
-  h2 { margin: 0 0 14px; font-size: clamp(1.8rem, 4vw, 3rem); }
-  h3 { margin: 0 0 10px; font-size: 1.35rem; }
-  p { line-height: 1.65; }
-  .sample-form {
+  .panel { padding: 18px; }
+  .workspace {
+    display: grid;
+    gap: 16px;
+  }
+  form {
     display: grid;
     gap: 12px;
-    margin: 18px 0;
   }
-  label { font-weight: 800; }
-  input, textarea {
-    width: 100%;
-    border: 1px solid #c7b48d;
-    border-radius: 16px;
-    padding: .85rem 1rem;
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  label {
+    display: grid;
+    gap: 6px;
+    font-weight: 700;
+  }
+  input, textarea, button {
     font: inherit;
   }
-  input, textarea { background: var(--field); color: var(--ink); }
-  .result {
-    margin-top: 18px;
-    padding: 18px;
-    border-left: 6px solid var(--moss);
-    border-radius: 18px;
-    background: white;
+  input, textarea {
+    width: 100%;
+    min-width: 0;
+    border: 1px solid #b9c4bd;
+    border-radius: 8px;
+    background: var(--field);
+    color: var(--ink);
+    padding: .72rem .78rem;
   }
-  .result.warning { border-left-color: var(--clay); }
-  .result.empty { border-left-color: var(--gold); }
-  .state-list {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
-    margin-top: 16px;
+  textarea { min-height: 104px; resize: vertical; }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
   }
-  .state {
-    min-height: 132px;
-    padding: 14px;
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    background: rgba(255, 255, 255, .72);
-  }
-  .state strong { display: block; margin-bottom: 6px; }
-  .kicker {
-    color: var(--muted);
-    font-size: .86rem;
+  button {
+    border: 0;
+    border-radius: 8px;
+    background: var(--primary);
+    color: #fff;
+    padding: .7rem .95rem;
     font-weight: 800;
-    letter-spacing: .08em;
-    text-transform: uppercase;
+    cursor: pointer;
   }
-  .facts { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
-  .facts li { padding: 10px 0; border-top: 1px solid #eadfc8; }
-  .notice {
-    margin: 24px 0 0;
-    padding: 18px;
-    border: 1px dashed var(--clay);
-    border-radius: 22px;
-    background: rgba(178, 96, 63, .10);
+  button.secondary { background: var(--blue); }
+  button:disabled { opacity: .58; cursor: wait; }
+  .result {
+    min-height: 260px;
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
   }
-  footer { padding: 38px 0 56px; color: var(--muted); }
-  :focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
-  @media (max-width: 760px) {
-    header { padding-top: 34px; }
-    .banner { grid-template-columns: 1fr; }
-    .card { grid-column: span 12; padding: 20px; border-radius: 22px; }
-    .state-list { grid-template-columns: 1fr; }
+  .status-line {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    min-height: 2rem;
+    padding: .25rem .55rem;
+    border-radius: 8px;
+    background: #eef5f1;
+    color: var(--primary-dark);
+    font-weight: 800;
+  }
+  .status-line.warn { background: #fff3eb; color: var(--warn); }
+  .status-line.empty { background: #fff8e7; color: #7b570d; }
+  dl {
+    display: grid;
+    grid-template-columns: 10rem minmax(0, 1fr);
+    gap: 8px 12px;
+    margin: 14px 0;
+  }
+  dt { color: var(--muted); font-weight: 800; }
+  dd { margin: 0; overflow-wrap: anywhere; }
+  ul { padding-left: 1.25rem; }
+  li { margin: .35rem 0; }
+  .boundary {
+    border-left: 4px solid var(--warn);
+    padding: 12px;
+    border-radius: 8px;
+    background: #fff6f0;
+  }
+  .state-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .state-tile {
+    min-height: 108px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px;
+    background: #fbfcfb;
+  }
+  .state-tile strong { display: block; margin-bottom: 5px; }
+  .muted { color: var(--muted); }
+  footer { padding-bottom: 34px; color: var(--muted); }
+  :focus-visible { outline: 4px solid #d9b04c; outline-offset: 3px; }
+  @media (max-width: 820px) {
+    header { grid-template-columns: 1fr; }
+    main { grid-template-columns: 1fr; }
+    .field-row, .state-grid, dl { grid-template-columns: 1fr; }
+    .badge { width: fit-content; white-space: normal; }
   }
 </style>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
 <header>
-  <p class="eyebrow">CivicSuite / CivicZone resident lookup</p>
-  <h1>Find zoning context before you ask for a ruling.</h1>
-  <p class="lede">CivicZone helps residents and staff inspect parcel zoning context, cited use rules, dimensional standards, and escalation paths without turning informational guidance into an official determination.</p>
-  <div class="banner" aria-label="Current product state">
-    <div>
-      <span class="badge">v0.2.0 cited zoning lookup + staff escalation</span>
-      <p><strong>Available now:</strong> parcel lookup, zone and overlay context, cited use and dimensional rule cards, deterministic resident Q&amp;A, staff escalation, optional local persistence, staff workflow APIs, and local adversarial integration validation.</p>
-    </div>
-    <a href="/docs" aria-label="Open API documentation">API docs</a>
+  <div>
+    <h1>CivicZone resident lookup</h1>
+    <p class="lede">Parcel zoning context, cited use rules, dimensional standards, and escalation paths for residents. CivicZone provides information only; planning staff make official determinations.</p>
   </div>
+  <span class="badge">v1.0.0 public-use module</span>
 </header>
 <main id="main" tabindex="-1">
-  <section class="grid" aria-labelledby="lookup-title">
-    <article class="card large">
-      <p class="kicker">Parcel lookup</p>
-      <h2 id="lookup-title">123 Main St</h2>
-      <form class="sample-form" aria-label="Sample parcel lookup form">
-        <label for="parcel">Address or parcel number</label>
-        <input id="parcel" name="parcel" value="123 Main St" aria-describedby="parcel-help">
-        <p id="parcel-help">This example is pre-filled. Cities can load local parcel and rule records with CIVICZONE_PARCEL_RULE_DB_URL.</p>
-      </form>
-      <div class="result" role="status" aria-live="polite">
-        <h3>R-2 Residential District</h3>
-        <ul class="facts">
-          <li><strong>Parcel:</strong> 100-200-300</li>
-          <li><strong>Overlay:</strong> Historic District Overlay</li>
-          <li><strong>Constraints:</strong> Historic review required for exterior alterations; ADU review may require planner confirmation.</li>
-          <li><strong>Source:</strong> configured local zoning dataset or bundled municipal sample fixture.</li>
-        </ul>
+  <section class="panel workspace" aria-labelledby="lookup-title">
+    <div>
+      <h2 id="lookup-title">Lookup and question</h2>
+      <p class="muted">The sample city dataset includes parcel 100-200-300 at 123 Main St in R-2.</p>
+    </div>
+    <form id="zone-form">
+      <div class="field-row">
+        <label for="parcel">Parcel number
+          <input id="parcel" name="parcel" value="100-200-300" autocomplete="off">
+        </label>
+        <label for="address">Address
+          <input id="address" name="address" value="123 Main St" autocomplete="street-address">
+        </label>
       </div>
-    </article>
-
-    <article class="card">
-      <p class="kicker">Use rule</p>
-      <h2>Accessory dwelling unit</h2>
-      <div class="result">
-        <h3>Conditional use review</h3>
-        <p>In sample zone R-2, an accessory dwelling unit is shown as conditionally allowed.</p>
-        <p><strong>Citation:</strong> Sample Zoning Code &sect; 18.20.040.</p>
+      <label for="question">Question
+        <textarea id="question" name="question">Can I build an ADU?</textarea>
+      </label>
+      <div class="actions">
+        <button id="run" type="submit">Run lookup</button>
+        <button class="secondary" id="empty" type="button">Check missing parcel</button>
+        <button class="secondary" id="partial" type="button">Check planner review</button>
       </div>
-    </article>
-
-    <article class="card large">
-      <p class="kicker">User-visible states</p>
-      <h2>Clear outcomes for residents</h2>
-      <div class="state-list" aria-label="CivicZone user-visible states">
-        <div class="state" role="status">
-          <strong>Loading</strong>
-          Checking the configured parcel and zoning-rule dataset.
-        </div>
-        <div class="state">
-          <strong>Success</strong>
-          Parcel context and citations are shown with an informational-only boundary.
-        </div>
-        <div class="state empty">
-          <strong>Empty</strong>
-          No parcel was found. Check the address or ask staff to load local parcel records.
-        </div>
-        <div class="state warning">
-          <strong>Error or partial</strong>
-          Missing citations, stale source data, or determination requests are routed to planning staff.
-        </div>
-      </div>
-    </article>
-
-    <article class="card">
-      <p class="kicker">Dimensional rule</p>
-      <h2>Front setback</h2>
-      <div class="result">
-        <h3>20 feet</h3>
-        <p>Sample R-2 dimensional standards show a 20-foot front setback.</p>
-        <p><strong>Citation:</strong> Sample Zoning Code &sect; 18.20.060.</p>
-      </div>
-    </article>
-
-    <article class="card">
-      <p class="kicker">Resident Q&amp;A</p>
-      <h2>Answer only when cited</h2>
-      <div class="result">
-        <p><strong>Question:</strong> Can I build an ADU?</p>
-        <p><strong>Answer:</strong> The sample code indicates ADUs require conditional use review in R-2. Contact planning staff before applying.</p>
-        <p><strong>Citation:</strong> Sample Zoning Code &sect; 18.20.040.</p>
-      </div>
-    </article>
-
-    <article class="card">
-      <p class="kicker">Planner escalation</p>
-      <h2>Judgment calls go to humans</h2>
-      <div class="result warning">
-        <p>Questions about variances, conditional use permits, appeals, nonconforming uses, and zoning determinations are routed to planner review.</p>
-        <p>Staff-only precedent context is kept out of resident-facing answers.</p>
-      </div>
-    </article>
+    </form>
+    <div class="result" id="result" role="status" aria-live="polite">
+      <span class="status-line">Ready</span>
+      <p>Submit the sample lookup to see parcel context, citations, and the non-determination boundary.</p>
+    </div>
   </section>
-
-  <section class="notice" aria-labelledby="boundary-title">
-    <h2 id="boundary-title">Important boundaries</h2>
-    <p>CivicZone does not provide legal advice, does not make a zoning determination, and does not replace your planning department. It provides cited informational context and routes judgment calls, missing citations, stale data, and official-decision requests to staff.</p>
-    <p>If your question affects property rights, deadlines, permits, enforcement, variances, or appeals, contact municipal planning staff for an official decision.</p>
-  </section>
+  <aside class="panel" aria-labelledby="states-title">
+    <h2 id="states-title">Resident states</h2>
+    <div class="state-grid">
+      <div class="state-tile"><strong>Loading</strong>Lookup actions disable while CivicZone checks the parcel and rules.</div>
+      <div class="state-tile"><strong>Success</strong>Context appears with citations and official-decision boundaries.</div>
+      <div class="state-tile"><strong>Empty</strong>Missing parcels explain which sample or local records to load.</div>
+      <div class="state-tile"><strong>Error or partial</strong>Invalid input, stale data, missing citations, and determinations route to planning staff.</div>
+    </div>
+    <div class="boundary">
+      <h3>Important boundary</h3>
+      <p>CivicZone does not provide legal advice, does not make a zoning determination, and does not replace your planning department.</p>
+    </div>
+    <p><a href="/civiczone/staff">Staff workspace</a> requires the trusted municipal staff access layer for API actions.</p>
+  </aside>
 </main>
 <footer>
-  <p>CivicZone is part of the Apache 2.0 CivicSuite open-source municipal AI project.</p>
+  <p>CivicZone is part of CivicSuite. Configure local parcel and zoning-rule data before relying on city-specific answers.</p>
 </footer>
+<script>
+const form = document.querySelector("#zone-form");
+const run = document.querySelector("#run");
+const result = document.querySelector("#result");
+const parcel = document.querySelector("#parcel");
+const address = document.querySelector("#address");
+const question = document.querySelector("#question");
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[char]));
+}
+
+function setLoading() {
+  run.disabled = true;
+  result.innerHTML = '<span class="status-line">Loading</span><p>Checking parcel, use rules, and cited answer boundaries.</p>';
+}
+
+function renderFailure(title, detail, mode = "warn") {
+  const message = detail?.message || title;
+  const fix = detail?.fix || "Check the address, parcel number, and question, then retry.";
+  result.innerHTML = `<span class="status-line ${mode}">${escapeHtml(title)}</span><h3>${escapeHtml(message)}</h3><p>${escapeHtml(fix)}</p>`;
+}
+
+function renderSuccess(parcelPayload, answerPayload) {
+  const answerStatus = answerPayload.status === "answered" ? "Success" : "Planner review";
+  const mode = answerPayload.status === "answered" ? "" : "warn";
+  const citations = (answerPayload.citations || []).map((citation) => `<li>${escapeHtml(citation)}</li>`).join("") || "<li>No citation available; route to planning staff.</li>";
+  result.innerHTML = `
+    <span class="status-line ${mode}">${answerStatus}</span>
+    <dl>
+      <dt>Parcel</dt><dd>${escapeHtml(parcelPayload.parcel_number)}</dd>
+      <dt>Address</dt><dd>${escapeHtml(parcelPayload.address)}</dd>
+      <dt>Zone</dt><dd>${escapeHtml(parcelPayload.zone.code)} - ${escapeHtml(parcelPayload.zone.name)}</dd>
+      <dt>Overlays</dt><dd>${escapeHtml((parcelPayload.overlays || []).join(", ") || "None listed")}</dd>
+      <dt>Constraints</dt><dd>${escapeHtml((parcelPayload.constraints || []).join("; ") || "None listed")}</dd>
+      <dt>Answer</dt><dd>${escapeHtml(answerPayload.answer)}</dd>
+      <dt>Next step</dt><dd>${escapeHtml(answerPayload.next_step)}</dd>
+    </dl>
+    <h3>Citations</h3>
+    <ul>${citations}</ul>
+    <p class="boundary">${escapeHtml(answerPayload.disclaimer || parcelPayload.disclaimer)}</p>
+  `;
+}
+
+async function postJson(url, body) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(body)
+  });
+  const payload = await response.json();
+  if (!response.ok) {
+    throw payload;
+  }
+  return payload;
+}
+
+async function runLookup(event) {
+  event.preventDefault();
+  setLoading();
+  try {
+    const parcelPayload = await postJson("/api/v1/civiczone/parcels/lookup", {
+      parcel_number: parcel.value.trim() || null,
+      address: address.value.trim() || null
+    });
+    const answerPayload = await postJson("/api/v1/civiczone/questions/answer", {
+      zone_code: parcelPayload.zone.code,
+      question: question.value.trim()
+    });
+    renderSuccess(parcelPayload, answerPayload);
+  } catch (error) {
+    renderFailure("Needs attention", error.detail || error, error.status === "refused" ? "empty" : "warn");
+  } finally {
+    run.disabled = false;
+  }
+}
+
+form.addEventListener("submit", runLookup);
+document.querySelector("#empty").addEventListener("click", () => {
+  parcel.value = "not-a-real-parcel";
+  address.value = "";
+  question.value = "Can I build an ADU?";
+  form.requestSubmit();
+});
+document.querySelector("#partial").addEventListener("click", () => {
+  parcel.value = "100-200-300";
+  address.value = "123 Main St";
+  question.value = "Will the city approve my variance?";
+  form.requestSubmit();
+});
+</script>
 </body>
 </html>
 """

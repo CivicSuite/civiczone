@@ -4,17 +4,18 @@
 
 CivicZone answers routine parcel-aware zoning questions with citations. It is not a zoning determination tool, not legal advice, and not a replacement for planner review.
 
-Current state: published 0.2.0 recovery label recovered through suite release-recovery evidence. The package, health endpoints, canonical zoning schema, Alembic migrations, parcel/zone lookup API, use and dimensional rule APIs, optional database-backed parcel/rule lookup records, resident question ledger records, staff workflow records, citation-grounded resident Q&A, staff-only precedent protection, local adversarial integration mocks, an accessible resident UI at `/civiczone`, and CivicCore v1.0.0 release-wheel dependency alignment exist. CivicZone does not call live external systems by default, does not provide legal advice, and does not make official zoning determinations. See `docs/release-recovery-status.md` for the local release gate, browser QA, and CI evidence.
+Current state: CivicZone v1.0.0 public-use module release. The package, health endpoints, canonical zoning schema, Alembic migrations, parcel/zone lookup API, use and dimensional rule APIs, optional database-backed parcel/rule lookup records, resident question ledger records, staff workflow records, citation-grounded resident Q&A, staff-only precedent protection, local adversarial integration mocks, a browser-usable resident UI at `/civiczone`, a staff workflow shell at `/civiczone/staff`, trusted-proxy staff access validation, and CivicCore v1.1.0 release-wheel dependency alignment exist. CivicZone does not call live external systems by default, does not provide legal advice, and does not make official zoning determinations. See `docs/release-recovery-status.md` for historical recovery context and current release evidence.
 
 The resident UI shows a pre-filled parcel lookup for `123 Main St`, zone context, use and dimensional-rule cards, citation-grounded Q&A, visible loading/success/empty/error/partial state guidance, and planner-escalation guidance. It is informational only: it is not legal advice, not a zoning determination, and not a replacement for municipal planning staff.
 
 ## For IT And Technical Staff
 
-CivicZone is a FastAPI Python package pinned to the published CivicCore v1.0.0 release wheel. The current runtime exposes:
+CivicZone is a FastAPI Python package pinned to the published CivicCore v1.1.0 release wheel. The current runtime exposes:
 
 - `GET /`
 - `GET /health`
 - `GET /civiczone`
+- `GET /civiczone/staff`
 - Canonical SQLAlchemy models for zones, overlays, parcels, use rules, dimensional rules, citations, precedents, interpretation notes, and zone questions.
 - Alembic migration `civiczone_0001_schema`.
 - Alembic migration `civiczone_0002_parcel_rules` for optional parcel/rule lookup records.
@@ -33,7 +34,7 @@ CivicZone is a FastAPI Python package pinned to the published CivicCore v1.0.0 r
 
 Set `CIVICZONE_PARCEL_RULE_DB_URL` to persist parcel, use-rule, dimensional-rule, resident-question ledger, and staff workflow data. Leave it unset for deterministic in-memory sample data during local development and documentation examples.
 
-Staff workflow endpoints require trusted municipal access headers:
+Staff workflow endpoints require trusted municipal access headers from a configured trusted proxy/source. Local development accepts loopback by default. Shared deployments should set `CIVICZONE_STAFF_TRUSTED_PROXY_CIDRS` and strip client-supplied staff headers before requests reach CivicZone.
 
 - `X-CivicZone-Principal`
 - `X-CivicZone-Role: planner`, `staff`, or `zoning_admin`
@@ -53,7 +54,7 @@ bash scripts/verify-release.sh
 ```mermaid
 flowchart LR
   Resident["Resident or planner"] --> CivicZone["CivicZone"]
-CivicZone --> CivicCore["CivicCore v1.0.0"]
+CivicZone --> CivicCore["CivicCore v1.1.0"]
 CivicZone --> CivicCode["CivicCode v1.0.0+"]
 CivicZone --> LocalMocks["Adversarial local integration mocks"]
 CivicZone -. configured .-> GIS["Local GIS / assessor datasets"]

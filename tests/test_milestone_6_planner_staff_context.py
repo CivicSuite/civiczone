@@ -5,7 +5,7 @@ from civiczone.qa import answer_zoning_question
 from civiczone.staff_context import classify_for_planner_review, get_staff_precedent
 
 
-client = TestClient(app)
+client = TestClient(app, client=("127.0.0.1", 50000))
 
 
 def test_variance_question_escalates_to_planner_review() -> None:

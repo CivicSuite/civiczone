@@ -16,24 +16,24 @@ def test_public_ui_route_returns_accessible_html() -> None:
     assert '<html lang="en">' in text
     assert '<a class="skip-link" href="#main">Skip to main content</a>' in text
     assert '<main id="main" tabindex="-1">' in text
-    assert "aria-label=\"Current product state\"" in text
     assert "aria-live=\"polite\"" in text
-    assert "v0.2.0 cited zoning lookup" in text
-    assert "<button" not in text
+    assert "v1.0.0 public-use module" in text
+    assert '<button id="run" type="submit">Run lookup</button>' in text
 
 
-def test_public_ui_shows_sample_outputs_and_citations() -> None:
+def test_public_ui_shows_real_api_workflow_bindings() -> None:
     response = client.get("/civiczone")
     text = response.text
 
     assert "123 Main St" in text
     assert "100-200-300" in text
-    assert "R-2 Residential District" in text
-    assert "Historic District Overlay" in text
-    assert "Sample Zoning Code" in text
-    assert "Â§" not in text
-    assert "Conditional use review" in text
-    assert "20-foot front setback" in text
+    assert "sample city dataset" in text
+    assert "R-2" in text
+    assert "ADU" in text
+    assert "Ã‚Â§" not in text
+    assert "fetch(" in text
+    assert "/api/v1/civiczone/parcels/lookup" in text
+    assert "/api/v1/civiczone/questions/answer" in text
 
 
 def test_public_ui_keeps_boundaries_actionable_and_honest() -> None:
@@ -43,9 +43,20 @@ def test_public_ui_keeps_boundaries_actionable_and_honest() -> None:
     assert "does not provide legal advice" in text
     assert "does not make a zoning determination" in text
     assert "does not replace your planning department" in text
-    assert "routes judgment calls" in text
-    assert "No parcel was found" in text
-    assert "Staff-only precedent context is kept out" in text
+    assert "Missing parcels explain" in text
+    assert "Staff workspace" in text
     assert "Shipping v0.1.0" not in text
     assert "v0.1.0 public UI foundation" not in text
     assert "zoning determinations are available" not in text
+
+
+def test_staff_ui_route_returns_browser_shell_without_embedded_staff_data() -> None:
+    response = client.get("/civiczone/staff")
+    text = response.text
+
+    assert response.status_code == 200
+    assert "CivicZone staff workspace" in text
+    assert "X-CivicZone-Principal" in text
+    assert "X-CivicZone-Role" in text
+    assert "/api/v1/civiczone/staff/questions/answer" in text
+    assert "staff_only" not in text

@@ -5,7 +5,8 @@ import civiczone.main as main_module
 from civiczone.main import app
 
 
-client = TestClient(app)
+client = TestClient(app, client=("127.0.0.1", 50000))
+untrusted_client = TestClient(app, client=("203.0.113.10", 50000))
 STAFF_HEADERS = {"X-CivicZone-Principal": "planner@example.gov", "X-CivicZone-Role": "staff"}
 RESIDENT_HEADERS = {"X-CivicZone-Principal": "resident@example.gov", "X-CivicZone-Role": "resident"}
 
@@ -34,6 +35,18 @@ def test_staff_workflow_api_rejects_missing_and_underprivileged_auth() -> None:
         "staff",
         "zoning_admin",
     ]
+
+
+def test_staff_workflow_api_rejects_spoofed_headers_from_untrusted_source() -> None:
+    response = untrusted_client.post(
+        "/api/v1/civiczone/staff/questions/answer",
+        json={"zone_code": "R-2", "question": "What is the front setback?"},
+        headers=STAFF_HEADERS,
+    )
+
+    assert response.status_code == 403
+    assert "approved proxy" in response.json()["detail"]["message"]
+    assert "strip client-supplied copies" in response.json()["detail"]["fix"]
 
 
 def test_planner_question_answer_returns_code_cross_references() -> None:

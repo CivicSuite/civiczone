@@ -2,7 +2,7 @@
 
 CivicZone is CivicSuite's parcel-aware zoning and land-use Q&A module.
 
-Current state: **published v0.2.0 recovery label recovered through suite release-recovery evidence**. This repo contains a FastAPI service, health/root endpoints, documentation gates, canonical zoning schema models, Alembic migrations, deterministic parcel/zone lookup, cited use-rule lookup, cited dimensional-rule prechecks, resident Q&A with refusal and escalation rules, optional database-backed parcel/rule, resident-question ledger, and staff-workflow records through `CIVICZONE_PARCEL_RULE_DB_URL`, staff-only precedent protection, an accessible resident UI at `/civiczone`, adversarial local integration mocks, and CivicCore v1.0.0 release-wheel dependency alignment. See [docs/release-recovery-status.md](docs/release-recovery-status.md) for the local release gate, browser QA, and CI evidence.
+Current state: **CivicZone v1.0.0 public-use module release**. This repo contains a FastAPI service, health/root endpoints, documentation gates, canonical zoning schema models, Alembic migrations, deterministic parcel/zone lookup, cited use-rule lookup, cited dimensional-rule prechecks, resident Q&A with refusal and escalation rules, optional database-backed parcel/rule, resident-question ledger, and staff-workflow records through `CIVICZONE_PARCEL_RULE_DB_URL`, staff-only precedent protection, a browser-usable resident UI at `/civiczone`, a staff workflow shell at `/civiczone/staff`, adversarial local integration mocks, trusted-proxy staff access validation, and CivicCore v1.1.0 release-wheel dependency alignment. See [docs/release-recovery-status.md](docs/release-recovery-status.md) for historical recovery context and current release evidence.
 
 ## Product Boundaries
 
@@ -26,6 +26,7 @@ bash scripts/verify-release.sh
 - `GET /` returns current module status and operator next step.
 - `GET /health` returns package and CivicCore version information.
 - `GET /civiczone` returns the accessible resident lookup UI.
+- `GET /civiczone/staff` returns the staff workflow shell; staff API actions require trusted municipal access headers from an approved proxy/source.
 - `POST /api/v1/civiczone/parcels/lookup` returns sample parcel zone context for `100-200-300` / `123 Main St`.
 - `POST /api/v1/civiczone/rules/use` returns sample use status with citation.
 - `POST /api/v1/civiczone/rules/dimensional` returns sample dimensional rule values with citation.
@@ -42,7 +43,7 @@ Resident question text is stored only when `CIVICZONE_PARCEL_RULE_DB_URL` is con
 
 Set `CIVICZONE_PARCEL_RULE_DB_URL` to enable persistent parcel, use-rule, dimensional-rule, resident-question ledger, and staff workflow records. When unset, CivicZone uses deterministic in-memory sample data and does not persist question or staff workflow rows.
 
-Staff workflow endpoints require trusted municipal access headers:
+Staff workflow endpoints require trusted municipal access headers from a configured trusted proxy/source. Local development accepts loopback by default. Shared deployments should set `CIVICZONE_STAFF_TRUSTED_PROXY_CIDRS` and strip client-supplied staff headers before requests reach CivicZone.
 
 - `X-CivicZone-Principal`
 - `X-CivicZone-Role: planner`, `staff`, or `zoning_admin`

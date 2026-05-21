@@ -62,3 +62,17 @@ Acceptance criteria:
 - Version surfaces match.
 - GitHub release publishes wheel, sdist, and checksums.
 - Umbrella compatibility matrix is updated.
+
+## Milestone 9 - v1.0.0 Public-Use Release
+
+Acceptance criteria:
+- Version surfaces match `1.0.0`.
+- CivicCore compatibility is aligned to the published CivicCore v1.1.0 wheel.
+- Resident UI runs live parcel lookup, cited Q&A, empty, error, and
+  planner-review states.
+- Staff UI shell supports planner Q&A, ambiguity review, analytics, and
+  staff-report outline actions through trusted municipal access headers.
+- Staff APIs validate headers through the trusted proxy/source allowlist.
+- Full tests, docs gate, Ruff, release gate, browser QA, adversarial validation,
+  release-gate audit, CI, tag/release, and CivicSuite installer/module-selection
+  truth pass.

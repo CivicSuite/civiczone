@@ -13,18 +13,13 @@ The format follows Keep a Changelog, and this project follows Semantic Versionin
 
 ## [Unreleased]
 
-### Changed
+## [1.0.0] - 2026-05-21
 
-- feat(deps): bump civiccore pin to v1.0.1 (security hardening recovery patch)
+### Release note
 
-## [1.0.0] - 2026-05-07
-
-### Recovery note
-
-- The `1.0.0` label was checked through the suite release-recovery pass with a
-  fresh local release gate and live browser QA. Treat the original release date
-  as historical; the recovery evidence is recorded in
-  `docs/release-recovery-status.md`.
+- CivicZone is promoted from the demoted `0.2.0` recovery posture to the active
+  `1.0.0` public-use module release after the current scope, UX, docs, tests,
+  adversarial validation, and release-gate pass.
 
 ### Added
 
@@ -32,12 +27,13 @@ The format follows Keep a Changelog, and this project follows Semantic Versionin
 - Staff workflow APIs for planner Q&A, ambiguity review queue, high-volume question analytics, staff-report outline support, and flagged-answer review.
 - Database-backed staff workflow records for planner questions, ambiguity queue items, and flagged answer reviews when `CIVICZONE_PARCEL_RULE_DB_URL` is configured.
 - Local adversarial integration mocks for Esri ArcGIS REST, GeoJSON fallback, CivicCode, CivicClerk, CivicPlan, CivicAccess, county assessor, and CKAN boundary validation.
-- Resident UI copy and visible state guidance for loading, success, empty, error, and partial outcomes.
+- Browser-usable resident UI for live parcel lookup, cited Q&A, empty, error, and planner-review states.
+- Browser staff workflow shell for planner Q&A, ambiguity queue creation, analytics, and staff-report outline support.
 
 ### Changed
 
-- Published CivicZone release surfaces at `1.0.0`; the later suite
-  release-recovery pass records fresh verification evidence.
+- CivicCore dependency alignment moves to the published CivicCore `1.1.0` wheel.
+- Staff workflow APIs now validate trusted municipal staff headers through the CivicCore trusted-proxy helper with loopback-only local defaults.
 - Updated runtime and documentation boundaries to describe the v1 product without claiming legal advice, official zoning determinations, or live external vendor calls by default.
 
 ## [0.1.2] - 2026-05-07

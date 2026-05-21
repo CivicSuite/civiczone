@@ -1,0 +1,8 @@
+2026-05-21T12:00:00Z | START | CivicZone v1.0.0 module-release run created under agent-pipeline-codex v0.9.0 pattern.
+2026-05-21T12:00:00Z | ACTIVE_LOCK | CivicZone only. Queued modules read-only.
+2026-05-21T12:00:00Z | SCOPE | Scope read started from ACTIVE_RELEASE_QUEUE.md, CivicSuiteUnifiedSpec.md section 10, live GitHub main, and current CivicZone source.
+2026-05-21T13:00:00Z | BASELINE | Initial pytest failed 1 test due CivicCore 1.1.0 runtime vs stale 1.0.1 expectation; docs and Ruff passed.
+2026-05-21T13:30:00Z | EXECUTE | CivicZone source v1.0.0 release candidate implemented with public/staff browser surfaces and trusted staff auth.
+2026-05-21T14:00:00Z | BROWSER_QA | Resident and staff desktop/mobile browser QA passed; console clean after favicon fix.
+2026-05-21T14:15:00Z | VERIFY | scripts/verify-release.sh passed with 71 tests, docs gate, placeholder import gate, Ruff, build artifacts, and SHA256SUMS.
+2026-05-21T14:20:00Z | AUDIT | Release-gate audit recorded with 0 unresolved Blocker/Critical findings for source repo release candidate.

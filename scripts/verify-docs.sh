@@ -70,6 +70,8 @@ bad_markers=(
   "v0.2.0 recovery release"
   "0.2.0 recovery release"
   "current product release"
+  "current state: published v0.2.0"
+  "recovery label recovered"
 )
 
 for file in "${current_files[@]}"; do
