@@ -3,7 +3,7 @@ CivicZone
 
 CivicZone is CivicSuite's parcel-aware zoning and land-use Q&A module.
 
-Current state: CivicZone v1.0.0 public-use module release. This repo contains a FastAPI service, health/root endpoints, documentation gates, canonical zoning schema models, Alembic migrations, deterministic parcel/zone lookup, cited use-rule lookup, cited dimensional-rule prechecks, resident Q&A with refusal and escalation rules, optional database-backed parcel/rule, resident-question ledger, and staff-workflow records through CIVICZONE_PARCEL_RULE_DB_URL, staff-only precedent protection, a browser-usable resident UI at /civiczone, a staff workflow shell at /civiczone/staff, adversarial local integration mocks, trusted-proxy staff access validation, and CivicCore v1.1.0 release-wheel dependency alignment. See docs/release-recovery-status.md for historical recovery context and current release evidence.
+Current state: CivicZone v0.2.1 corrective demotion state. This repo contains a FastAPI service, health/root endpoints, documentation gates, canonical zoning schema models, Alembic migrations, deterministic parcel/zone lookup, cited use-rule lookup, cited dimensional-rule prechecks, resident Q&A with refusal and escalation rules, optional database-backed parcel/rule, resident-question ledger, and staff-workflow records through CIVICZONE_PARCEL_RULE_DB_URL, staff-only precedent protection, a browser-usable resident UI at /civiczone, a staff workflow shell at /civiczone/staff, adversarial local integration mocks, trusted-proxy staff access validation, and CivicCore v1.1.0 release-wheel dependency alignment. See docs/release-recovery-status.md for historical recovery context and current release evidence.
 
 Product boundaries:
 
