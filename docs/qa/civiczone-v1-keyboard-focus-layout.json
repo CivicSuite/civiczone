@@ -1,0 +1,88 @@
+{
+  "public": [
+    {
+      "tag": "A",
+      "id": "",
+      "text": "Skip to main content"
+    },
+    {
+      "tag": "INPUT",
+      "id": "parcel",
+      "text": "100-200-300"
+    },
+    {
+      "tag": "INPUT",
+      "id": "address",
+      "text": "123 Main St"
+    },
+    {
+      "tag": "TEXTAREA",
+      "id": "question",
+      "text": "Can I build an ADU?"
+    },
+    {
+      "tag": "BUTTON",
+      "id": "run",
+      "text": "Run lookup"
+    },
+    {
+      "tag": "BUTTON",
+      "id": "empty",
+      "text": "Check missing parcel"
+    },
+    {
+      "tag": "BUTTON",
+      "id": "partial",
+      "text": "Check planner review"
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "text": "Staff workspace"
+    }
+  ],
+  "staff": [
+    {
+      "tag": "INPUT",
+      "id": "principal",
+      "text": "planner@example.gov"
+    },
+    {
+      "tag": "INPUT",
+      "id": "role",
+      "text": "planner"
+    },
+    {
+      "tag": "INPUT",
+      "id": "zone",
+      "text": "R-2"
+    },
+    {
+      "tag": "TEXTAREA",
+      "id": "question",
+      "text": "What is the front setback?"
+    },
+    {
+      "tag": "BUTTON",
+      "id": "answer",
+      "text": "Answer"
+    },
+    {
+      "tag": "BUTTON",
+      "id": "queue",
+      "text": "Create review item"
+    },
+    {
+      "tag": "BUTTON",
+      "id": "analytics",
+      "text": "Analytics"
+    },
+    {
+      "tag": "BUTTON",
+      "id": "outline",
+      "text": "Report outline"
+    }
+  ],
+  "overflowPublic": false,
+  "overflowStaff": false
+}

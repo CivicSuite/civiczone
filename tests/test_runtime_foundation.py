@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_package_version_is_100() -> None:
-    assert civiczone.__version__ == "0.2.0"
+    assert civiczone.__version__ == "1.0.0"
 
 
 def test_pyproject_uses_published_civiccore_release_wheel() -> None:
@@ -22,9 +22,9 @@ def test_pyproject_uses_published_civiccore_release_wheel() -> None:
     assert data["tool"]["hatch"]["metadata"]["allow-direct-references"] is True
     assert (
         "civiccore @ https://github.com/CivicSuite/civiccore/releases/download/"
-        "v1.0.1/civiccore-1.0.1-py3-none-any.whl#sha256=561d7a8f73260d50de79351d330876d2cb3488c0e046a2888e82fe09d1e03969"
+        "v1.1.0/civiccore-1.1.0-py3-none-any.whl#sha256=3ab146f4fea2ae99640d5b1b013be1a9676de5f91b783eaeaa913043a2ae2b87"
     ) in dependencies
-    assert "civiccore==1.0.1" not in dependencies
+    assert "civiccore==1.1.0" not in dependencies
 
 
 def test_root_endpoint_states_runtime_boundary() -> None:
@@ -33,13 +33,13 @@ def test_root_endpoint_states_runtime_boundary() -> None:
     payload = response.json()
 
     assert payload["name"] == "CivicZone"
-    assert payload["version"] == "0.2.0"
+    assert payload["version"] == "1.0.0"
     assert payload["status"] == "v1 parcel-aware zoning Q&A runtime"
     assert "optional database-backed parcel/rule" in payload["message"]
     assert "staff workflow APIs" in payload["message"]
     assert "does not make zoning determinations" in payload["message"]
     assert payload["next_step"].startswith("Configure local parcel/rule data")
-    assert "trusted municipal access layer" in payload["next_step"]
+    assert "trusted staff proxy CIDR list" in payload["next_step"]
 
 
 def test_health_endpoint_reports_versions() -> None:
@@ -49,8 +49,8 @@ def test_health_endpoint_reports_versions() -> None:
 
     assert payload["status"] == "ok"
     assert payload["service"] == "civiczone"
-    assert payload["version"] == "0.2.0"
-    assert payload["civiccore_version"] == "1.0.1"
+    assert payload["version"] == "1.0.0"
+    assert payload["civiccore_version"] == "1.1.0"
 
 
 def test_release_gate_prefers_native_unix_python_before_windows_launcher() -> None:
@@ -66,8 +66,8 @@ def test_release_gate_prefers_native_unix_python_before_windows_launcher() -> No
 def test_documentation_gate_blocks_stale_product_release_claims() -> None:
     script = (ROOT / "scripts" / "verify-docs.sh").read_text(encoding="utf-8")
 
-    assert "v0.2.0 recovery release" in script
-    assert "0.2.0 recovery release" in script
+    assert "current state: published v0.2.0" in script
+    assert "recovery label recovered" in script
     assert "current product release" in script
 
 
@@ -82,6 +82,5 @@ def test_current_docs_mark_v1_label_as_recovered_without_product_release_overcla
 
     for path, text in docs.items():
         lowered = text.lower()
-        assert "release-recovery" in lowered, path
+        assert "1.0.0" in lowered, path
         assert "provisional" not in lowered, path
-        assert "product release" not in lowered, path

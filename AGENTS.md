@@ -18,7 +18,7 @@
 
 ## Placeholder Package Warning
 
-Do not import from CivicCore placeholder packages until CivicCore ships real implementations for them: `audit`, `auth`, `catalog`, `connectors`, `exemptions`, `ingest`, `notifications`, `onboarding`, `scaffold`, `search`, `verification`.
+Do not import from CivicCore placeholder packages until CivicCore ships real implementations for them: `audit`, `catalog`, `connectors`, `exemptions`, `ingest`, `notifications`, `onboarding`, `scaffold`, `search`, `verification`. CivicCore `auth` is no longer treated as a placeholder for CivicZone v1.0.0 because the current release uses its trusted-header helpers for staff access validation.
 
 ## Milestone Rule
 

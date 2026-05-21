@@ -10,5 +10,9 @@ Build order:
 6. Add planner escalation and staff-only context.
 7. Add public UI and accessibility pass.
 8. Cut v0.1.0 and update the umbrella compatibility matrix.
+9. Promote CivicZone to v1.0.0 with browser-usable resident and staff surfaces,
+   trusted-proxy staff access validation, current CivicCore compatibility,
+   adversarial integration validation, and CivicSuite installer/module-selection
+   truth.
 
 The implementation must remain local-first and citation-first throughout.

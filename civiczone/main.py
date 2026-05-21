@@ -4,6 +4,12 @@ from dataclasses import dataclass
 import os
 
 from civiccore import __version__ as CIVICCORE_VERSION
+from civiccore.auth import (
+    TrustedHeaderAuthConfig,
+    authorize_trusted_header_roles,
+    enforce_trusted_proxy_source,
+    load_trusted_header_auth_config,
+)
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -15,6 +21,7 @@ from civiczone.public_ui import render_public_lookup_page
 from civiczone.question_ledger import ZoneQuestionLedgerRepository
 from civiczone.qa import answer_zoning_question
 from civiczone.rule_lookup import RuleLookupError, RuleLookupRepository, lookup_dimensional_rule, lookup_use_rule
+from civiczone.staff_ui import render_staff_workspace_page
 from civiczone.staff_context import classify_for_planner_review, get_staff_precedent
 from civiczone.staff_workflows import StaffWorkflowStore
 
@@ -66,12 +73,12 @@ def root() -> dict[str, str]:
         "version": __version__,
         "status": "v1 parcel-aware zoning Q&A runtime",
         "message": (
-            "CivicZone v0.2.0 provides deterministic parcel lookup, cited use-rule lookup, cited dimensional prechecks, "
+            "CivicZone v1.0.0 provides deterministic parcel lookup, cited use-rule lookup, cited dimensional prechecks, "
             "resident zoning Q&A with refusal and escalation rules, staff workflow APIs, optional database-backed parcel/rule and question-ledger records, "
-            "canonical zoning schema migrations, adversarial local integration mocks, and an accessible resident UI. "
+            "canonical zoning schema migrations, adversarial local integration mocks, an accessible resident UI, and a staff workflow UI shell. "
             "It does not make zoning determinations, give legal advice, replace planner review, or call live external systems by default."
         ),
-        "next_step": "Configure local parcel/rule data, connect the trusted municipal access layer, and route official decisions to planning staff.",
+        "next_step": "Configure local parcel/rule data, set the trusted staff proxy CIDR list, and route official decisions to planning staff.",
     }
 
 
@@ -92,6 +99,13 @@ def public_civiczone_page() -> str:
     """Return the accessible public sample UI."""
 
     return render_public_lookup_page()
+
+
+@app.get("/civiczone/staff", response_class=HTMLResponse)
+def staff_civiczone_page() -> str:
+    """Return the staff workflow shell without exposing staff data in HTML."""
+
+    return render_staff_workspace_page()
 
 
 class ParcelLookupRequest(BaseModel):
@@ -156,31 +170,44 @@ class FlaggedAnswerImproveRequest(BaseModel):
 
 def _require_staff_access(request: Request) -> StaffPrincipal:
     allowed_roles = {"planner", "staff", "zoning_admin"}
-    subject = request.headers.get("X-CivicZone-Principal", "").strip()
-    if not subject:
-        raise HTTPException(
-            status_code=401,
-            detail={
-                "message": "Trusted identity header missing for CivicZone staff workflow access.",
-                "fix": "Send X-CivicZone-Principal from the trusted municipal access layer.",
-            },
-        )
-    roles = tuple(
-        role.strip()
-        for raw_value in request.headers.getlist("X-CivicZone-Role")
-        for role in raw_value.split(",")
-        if role.strip()
+    config = _staff_trusted_header_config()
+    enforce_trusted_proxy_source(
+        request.client.host if request.client else None,
+        service_name="CivicZone",
+        feature_name="staff workflow access",
+        config=config,
+        trusted_proxy_env_var="CIVICZONE_STAFF_TRUSTED_PROXY_CIDRS",
     )
-    if not allowed_roles.intersection(roles):
-        raise HTTPException(
-            status_code=403,
-            detail={
-                "message": "CivicZone staff workflow access requires a staff planning role.",
-                "fix": "Send X-CivicZone-Role with planner, staff, or zoning_admin.",
-                "required_roles": sorted(allowed_roles),
-            },
-        )
-    return StaffPrincipal(subject=subject, roles=roles)
+    principal = authorize_trusted_header_roles(
+        request.headers,
+        service_name="CivicZone",
+        feature_name="staff workflow access",
+        principal_header_name=config.principal_header_name,
+        roles_header_name=config.roles_header_name,
+        allowed_roles=allowed_roles,
+        provider_name=config.provider_name,
+    )
+    return StaffPrincipal(subject=principal.subject or "staff", roles=tuple(sorted(principal.roles)))
+
+
+def _staff_trusted_header_config() -> TrustedHeaderAuthConfig:
+    config = load_trusted_header_auth_config(
+        provider_env_var="CIVICZONE_STAFF_AUTH_PROVIDER",
+        provider_default="CivicZone staff shell",
+        principal_header_env_var="CIVICZONE_STAFF_PRINCIPAL_HEADER",
+        principal_header_default="X-CivicZone-Principal",
+        roles_header_env_var="CIVICZONE_STAFF_ROLES_HEADER",
+        roles_header_default="X-CivicZone-Role",
+        trusted_proxy_env_var="CIVICZONE_STAFF_TRUSTED_PROXY_CIDRS",
+    )
+    if config.trusted_proxy_cidrs:
+        return config
+    return TrustedHeaderAuthConfig(
+        provider_name=config.provider_name,
+        principal_header_name=config.principal_header_name,
+        roles_header_name=config.roles_header_name,
+        trusted_proxy_cidrs=("127.0.0.1/32", "::1/128"),
+    )
 
 
 @app.post("/api/v1/civiczone/parcels/lookup")
