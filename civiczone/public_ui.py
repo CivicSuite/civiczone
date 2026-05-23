@@ -208,7 +208,7 @@ def render_public_lookup_page() -> str:
     <h1>CivicZone resident lookup</h1>
     <p class="lede">Parcel zoning context, cited use rules, dimensional standards, and escalation paths for residents. CivicZone provides information only; planning staff make official determinations.</p>
   </div>
-  <span class="badge">v0.2.1 corrective demotion state</span>
+  <span class="badge">v0.2.2 corrective demotion state</span>
 </header>
 <main id="main" tabindex="-1">
   <section class="panel workspace" aria-labelledby="lookup-title">

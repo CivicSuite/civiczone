@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_package_version_is_100() -> None:
-    assert civiczone.__version__ == "0.2.1"
+    assert civiczone.__version__ == "0.2.2"
 
 
 def test_pyproject_uses_published_civiccore_release_wheel() -> None:
@@ -33,7 +33,7 @@ def test_root_endpoint_states_runtime_boundary() -> None:
     payload = response.json()
 
     assert payload["name"] == "CivicZone"
-    assert payload["version"] == "0.2.1"
+    assert payload["version"] == "0.2.2"
     assert payload["status"] == "v1 parcel-aware zoning Q&A runtime"
     assert "optional database-backed parcel/rule" in payload["message"]
     assert "staff workflow APIs" in payload["message"]
@@ -49,7 +49,7 @@ def test_health_endpoint_reports_versions() -> None:
 
     assert payload["status"] == "ok"
     assert payload["service"] == "civiczone"
-    assert payload["version"] == "0.2.1"
+    assert payload["version"] == "0.2.2"
     assert payload["civiccore_version"] == "1.1.0"
 
 
@@ -82,5 +82,5 @@ def test_current_docs_mark_v1_label_as_recovered_without_product_release_overcla
 
     for path, text in docs.items():
         lowered = text.lower()
-        assert "0.2.1" in lowered, path
+        assert "0.2.2" in lowered, path
         assert "provisional" not in lowered, path

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2] - 2026-05-23
+
+- Narrow truth-repair release. No functional upgrade.
+- Exists solely to supersede the false v1.0.0 release from 2026-05-21 in
+  GitHub's Latest impression.
+- CivicCore pin unchanged.
+
 ## [0.2.0] - 2026-05-10
 
 - Demoted the false v1.0.0 release label after the external CivicSuite audit found this module is a recovery/foundation module, not a canonical spec-complete v1 product.
