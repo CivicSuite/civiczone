@@ -17,7 +17,7 @@ def test_public_ui_route_returns_accessible_html() -> None:
     assert '<a class="skip-link" href="#main">Skip to main content</a>' in text
     assert '<main id="main" tabindex="-1">' in text
     assert "aria-live=\"polite\"" in text
-    assert "v0.2.1 corrective demotion state" in text
+    assert "v0.2.2 corrective demotion state" in text
     assert '<button id="run" type="submit">Run lookup</button>' in text
 
 
