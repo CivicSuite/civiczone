@@ -23,7 +23,7 @@ CivicZone is a FastAPI Python package pinned to the published CivicCore v1.2.0 r
 - `POST /api/v1/civiczone/parcels/lookup` for sample parcel lookup.
 - `POST /api/v1/civiczone/rules/use` for sample use status.
 - `POST /api/v1/civiczone/rules/dimensional` for sample dimensional rules.
-- `POST /api/v1/civiczone/questions/answer` for citation-grounded sample questions.
+- `POST /api/v1/civiczone/questions/answer` for citation-grounded resident use and dimensional-rule questions.
 - `POST /api/v1/civiczone/planner-review/classify` for sample escalation classification.
 - `GET /api/v1/civiczone/staff/precedents/{precedent_id}` for staff-only context.
 - `POST /api/v1/civiczone/staff/questions/answer` for staff Q&A with citations.

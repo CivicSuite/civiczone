@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 
 from civiczone.main import app
 from civiczone.qa import answer_zoning_question
+from civiczone.rule_lookup import UseRuleResult
 
 
 client = TestClient(app)
@@ -17,11 +18,50 @@ def test_adu_question_returns_citation_and_disclaimer() -> None:
     assert "not a zoning determination" in result.disclaimer
 
 
+def test_arbitrary_use_question_uses_cited_lookup_result() -> None:
+    result = answer_zoning_question(zone_code="R-2", question="Can I open a restaurant?")
+
+    assert result.status == "answered"
+    assert result.citations == ("CMC 18.20.020",)
+    assert result.answer == "In R-2, restaurant is listed as not listed. Escalate to planning staff for interpretation."
+
+
+def test_imported_use_question_can_be_answered_when_lookup_supplies_citation() -> None:
+    def lookup_use_rule(*, zone_code: str, use: str):
+        assert zone_code == "MX-1"
+        assert use == "duplex"
+        return UseRuleResult(
+            zone_code="MX-1",
+            use="duplex",
+            status="allowed",
+            review_path="Confirm overlays before permitting.",
+            citation="MXC 12.10.040",
+        )
+
+    result = answer_zoning_question(
+        zone_code="MX-1",
+        question="Can I build a duplex?",
+        use_rule_lookup=lookup_use_rule,
+    )
+
+    assert result.status == "answered"
+    assert result.citations == ("MXC 12.10.040",)
+    assert "duplex is listed as allowed" in result.answer
+
+
 def test_setback_question_returns_citation() -> None:
     result = answer_zoning_question(zone_code="R-2", question="What is my front setback?")
 
     assert result.status == "answered"
     assert result.citations == ("CMC 18.20.050(A)",)
+
+
+def test_height_question_uses_dimensional_alias() -> None:
+    result = answer_zoning_question(zone_code="R-2", question="What is the maximum height?")
+
+    assert result.status == "answered"
+    assert result.citations == ("CMC 18.20.050(B)",)
+    assert "height is 35 feet maximum" in result.answer
 
 
 def test_determination_question_escalates_without_citations() -> None:

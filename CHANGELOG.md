@@ -50,6 +50,7 @@ The format follows Keep a Changelog, and this project follows Semantic Versionin
 
 - CivicCore dependency alignment moves to the published CivicCore `1.2.0` wheel.
 - Added the `civiczone-import-data` local CSV importer for municipal parcel, use-rule, and dimensional-rule lookup data.
+- Expanded citation-first resident Q&A parsing so imported/local use and dimensional rules can answer more than hardcoded sample phrases without uncited generation.
 - Staff workflow APIs now validate trusted municipal staff headers through the CivicCore trusted-proxy helper with loopback-only local defaults.
 - Updated runtime and documentation boundaries to describe the v1 product without claiming legal advice, official zoning determinations, or live external vendor calls by default.
 

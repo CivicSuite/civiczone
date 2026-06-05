@@ -30,7 +30,7 @@ bash scripts/verify-release.sh
 - `POST /api/v1/civiczone/parcels/lookup` returns sample parcel zone context for `100-200-300` / `123 Main St`.
 - `POST /api/v1/civiczone/rules/use` returns sample use status with citation.
 - `POST /api/v1/civiczone/rules/dimensional` returns sample dimensional rule values with citation.
-- `POST /api/v1/civiczone/questions/answer` answers sample resident questions only when citations are available and records a local question-ledger row when `CIVICZONE_PARCEL_RULE_DB_URL` is configured.
+- `POST /api/v1/civiczone/questions/answer` answers supported resident use and dimensional-rule questions only when citations are available and records a local question-ledger row when `CIVICZONE_PARCEL_RULE_DB_URL` is configured.
 - `POST /api/v1/civiczone/planner-review/classify` identifies sample discretionary-review triggers.
 - `GET /api/v1/civiczone/staff/precedents/{precedent_id}` returns staff-only sample precedent context.
 - `POST /api/v1/civiczone/staff/questions/answer` gives staff Q&A with citations and informational boundaries.

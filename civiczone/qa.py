@@ -46,6 +46,12 @@ LOW_CONFIDENCE_PHRASES = (
     "unclear",
     "unknown overlay",
 )
+DIMENSIONAL_RULE_ALIASES = {
+    "front setback": "front_setback",
+    "front yard": "front_setback",
+    "height": "height",
+    "maximum height": "height",
+}
 
 
 def answer_zoning_question(
@@ -87,12 +93,28 @@ def answer_zoning_question(
             next_step="Route to planning staff; CivicZone provides information, not approvals or determinations.",
         )
 
-    if "adu" in normalized:
-        rule = use_rule_lookup(zone_code=zone_code, use="ADU")
+    dimensional_candidate = _extract_dimensional_rule_candidate(normalized)
+    if dimensional_candidate is not None:
+        rule = dimensional_rule_lookup(zone_code=zone_code, rule_type=dimensional_candidate)
+        if isinstance(rule, DimensionalRuleResult):
+            return ZoneAnswer(
+                answer=f"In {rule.zone_code}, the {rule.rule_type.replace('_', ' ')} is {rule.value}.",
+                citations=(rule.citation,),
+                status="answered",
+                reason="cited_dimensional_rule",
+                confidence="high",
+                next_step="Confirm parcel-specific overlays before relying on the informational answer.",
+            )
+        if isinstance(rule, RuleLookupError):
+            return _refused_from_rule_error(rule)
+
+    use_candidate = _extract_use_candidate(normalized)
+    if use_candidate is not None:
+        rule = use_rule_lookup(zone_code=zone_code, use=use_candidate)
         if isinstance(rule, UseRuleResult):
             return ZoneAnswer(
                 answer=(
-                    f"In {rule.zone_code}, an ADU is listed as {rule.status}. "
+                    f"In {rule.zone_code}, {rule.use} is listed as {rule.status}. "
                     f"{rule.review_path}"
                 ),
                 citations=(rule.citation,),
@@ -104,28 +126,54 @@ def answer_zoning_question(
         if isinstance(rule, RuleLookupError):
             return _refused_from_rule_error(rule)
 
-    if "setback" in normalized or "front yard" in normalized:
-        rule = dimensional_rule_lookup(zone_code=zone_code, rule_type="front_setback")
-        if isinstance(rule, DimensionalRuleResult):
-            return ZoneAnswer(
-                answer=f"In {rule.zone_code}, the sample front setback is {rule.value}.",
-                citations=(rule.citation,),
-                status="answered",
-                reason="cited_dimensional_rule",
-                confidence="high",
-                next_step="Confirm parcel-specific overlays before relying on the informational answer.",
-            )
-        if isinstance(rule, RuleLookupError):
-            return _refused_from_rule_error(rule)
-
     return ZoneAnswer(
-        answer="CivicZone cannot answer this sample question with a citation yet.",
+        answer="CivicZone cannot answer this question with a citation yet.",
         citations=(),
         status="refused",
         reason="no_cited_rule",
         confidence="none",
         next_step="Ask with a supported zoning use or dimensional rule, or route to planning staff.",
     )
+
+
+def _extract_use_candidate(normalized_question: str) -> str | None:
+    if "adu" in normalized_question:
+        return "ADU"
+    starters = (
+        "can i build ",
+        "can i open ",
+        "is a ",
+        "is an ",
+        "is ",
+        "are ",
+    )
+    for starter in starters:
+        index = normalized_question.find(starter)
+        if index == -1:
+            continue
+        candidate = normalized_question[index + len(starter):]
+        candidate = candidate.removesuffix(" allowed")
+        candidate = candidate.removesuffix(" permitted")
+        candidate = candidate.removesuffix(" conditional")
+        candidate = candidate.strip(" ?.")
+        if candidate.startswith("a "):
+            candidate = candidate.removeprefix("a ")
+        if candidate.startswith("an "):
+            candidate = candidate.removeprefix("an ")
+        if candidate:
+            return candidate
+    return None
+
+
+def _extract_dimensional_rule_candidate(normalized_question: str) -> str | None:
+    for phrase, rule_type in DIMENSIONAL_RULE_ALIASES.items():
+        if phrase in normalized_question:
+            return rule_type
+    if normalized_question.startswith("what is my "):
+        return normalized_question.removeprefix("what is my ").strip(" ?.").replace(" ", "_")
+    if normalized_question.startswith("what is the "):
+        return normalized_question.removeprefix("what is the ").strip(" ?.").replace(" ", "_")
+    return None
 
 
 def _refused_from_rule_error(error: RuleLookupError) -> ZoneAnswer:
