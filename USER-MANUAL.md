@@ -34,6 +34,8 @@ CivicZone is a FastAPI Python package pinned to the published CivicCore v1.2.0 r
 
 Set `CIVICZONE_PARCEL_RULE_DB_URL` to persist parcel, use-rule, dimensional-rule, resident-question ledger, and staff workflow data. Leave it unset for deterministic in-memory sample data during local development and documentation examples.
 
+Use the `civiczone-import-data` console script to load local municipal parcel, use-rule, and dimensional-rule CSV exports into the configured store. See `docs/local-data-import.md` for the required columns and failure behavior.
+
 Staff workflow endpoints require trusted municipal access headers from a configured trusted proxy/source. Local development accepts loopback by default. Shared deployments should set `CIVICZONE_STAFF_TRUSTED_PROXY_CIDRS` and strip client-supplied staff headers before requests reach CivicZone.
 
 - `X-CivicZone-Principal`

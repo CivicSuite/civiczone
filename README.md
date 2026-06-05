@@ -41,7 +41,7 @@ bash scripts/verify-release.sh
 
 Resident question text is stored only when `CIVICZONE_PARCEL_RULE_DB_URL` is configured. Cities should treat those rows as operational records, avoid entering sensitive personal details into sample Q&A, and apply local retention/privacy policy before exposing the ledger outside staff operations.
 
-Set `CIVICZONE_PARCEL_RULE_DB_URL` to enable persistent parcel, use-rule, dimensional-rule, resident-question ledger, and staff workflow records. When unset, CivicZone uses deterministic in-memory sample data and does not persist question or staff workflow rows.
+Set `CIVICZONE_PARCEL_RULE_DB_URL` to enable persistent parcel, use-rule, dimensional-rule, resident-question ledger, and staff workflow records. When unset, CivicZone uses deterministic in-memory sample data and does not persist question or staff workflow rows. Use the `civiczone-import-data` console script to load local municipal parcel and zoning-rule CSV exports into that configured store; see [docs/local-data-import.md](docs/local-data-import.md).
 
 Staff workflow endpoints require trusted municipal access headers from a configured trusted proxy/source. Local development accepts loopback by default. Shared deployments should set `CIVICZONE_STAFF_TRUSTED_PROXY_CIDRS` and strip client-supplied staff headers before requests reach CivicZone.
 
