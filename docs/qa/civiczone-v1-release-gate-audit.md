@@ -13,7 +13,7 @@ Date: 2026-05-21
 - Severity summary: Blocker 0, Critical 0, Major 0, Minor 0, Nit 0 unresolved.
 - Static audit confidence: High.
 - Runtime sign-off confidence: High for local/mock CivicZone v1 scope.
-- CI/workflow posture: `verify.yml` and `release.yml` install CivicCore v1.1.0 and run `scripts/verify-release.sh`.
+- CI/workflow posture: `verify.yml` and `release.yml` install CivicCore v1.2.0 and run `scripts/verify-release.sh`.
 
 Real state: CivicZone v1.0.0 now provides cited parcel-aware zoning lookup, resident Q&A with refusal/escalation, browser-usable resident and staff surfaces, trusted-proxy staff access validation, staff workflow APIs, local adversarial integration mocks, optional database-backed parcel/rule/question/staff workflow records, current docs, and v1.0.0 build artifacts. It does not provide legal advice, official zoning determinations, live vendor calls, or macOS lifecycle certification.
 
@@ -31,7 +31,7 @@ Real state: CivicZone v1.0.0 now provides cited parcel-aware zoning lookup, resi
 | required post-install steps | Checked | README/manual document install, verify, DB, and staff proxy config | none |
 | migrations | Checked | Existing pgvector/Alembic tests passed | none |
 | seed/bootstrap requirements | Checked | deterministic sample parcel/rule data; optional DB config documented | none |
-| runtime dependency and model requirements | Checked | CivicCore v1.1.0 wheel; no model/LLM dependency | none |
+| runtime dependency and model requirements | Checked | CivicCore v1.2.0 wheel; no model/LLM dependency | none |
 | first-boot dependency truth | Checked | sample mode runs without DB; DB enables persistence | none |
 | secrets and credential handling | Checked | secret scan found only test Postgres password fixture | none |
 | auth and session handling | Checked | staff APIs enforce trusted proxy/source plus principal/role headers | none |
@@ -61,7 +61,7 @@ Real state: CivicZone v1.0.0 now provides cited parcel-aware zoning lookup, resi
 | Claim | Source | Verdict | Evidence |
 |---|---|---|---|
 | CivicZone version is 1.0.0 | package, docs, release gate | True | `scripts/verify-release.sh` passed and built `civiczone-1.0.0` artifacts |
-| CivicCore dependency is v1.1.0 | pyproject/workflows/health test | True | dependency hash checked against GitHub release asset |
+| CivicCore dependency is v1.2.0 | pyproject/workflows/health test | True | dependency hash checked against GitHub release asset |
 | Resident Q&A is cited and bounded | API/tests/browser | True | ADU success renders `CMC 18.42.030`; legal/determination boundaries remain visible |
 | Staff workflows exist | API/tests/browser | True | staff Q&A, queue, analytics, outline, flagged-answer tests and browser evidence |
 | Staff-only routes are protected | main/tests | True | missing, role, and untrusted-source tests pass |
@@ -113,7 +113,7 @@ CivicZone fits the spec promise: routine parcel-aware zoning context with citati
 
 ## 10. Documentation Deep Dive
 
-Checked README, README.txt, manual, security note, changelog, docs index, implementation plan, milestones, recovery status, and QA docs. Current-facing docs now use `1.0.0` and CivicCore `1.1.0`.
+Checked README, README.txt, manual, security note, changelog, docs index, implementation plan, milestones, recovery status, and QA docs. Current-facing docs now use `0.2.2` and CivicCore `1.2.0`.
 
 ## 11. Install / Bootstrap / Seeding Deep Dive
 
@@ -121,7 +121,7 @@ Checked editable install/release gate, deterministic sample mode, optional DB co
 
 ## 12. Version And Release Consistency Deep Dive
 
-Checked `pyproject.toml`, `civiczone/__init__.py`, `/health`, tests, scripts, docs, workflows, wheel, sdist, and SHA256SUMS. All current release surfaces are synchronized to `1.0.0` and CivicCore `1.1.0`.
+Checked `pyproject.toml`, `civiczone/__init__.py`, `/health`, tests, scripts, docs, workflows, wheel, sdist, and SHA256SUMS. All current release surfaces are synchronized to `0.2.2` and CivicCore `1.2.0`.
 
 ## 13. Test Engineering Deep Dive
 

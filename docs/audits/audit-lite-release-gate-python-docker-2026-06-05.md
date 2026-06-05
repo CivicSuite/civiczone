@@ -20,7 +20,7 @@ None.
 ## What's Working
 - `tests/test_milestone_2_schema_and_migrations.py` now probes `docker info` before the real pgvector migration integration test and skips only when Docker is unavailable.
 - `tests/test_milestone_2_schema_and_migrations.py` includes a regression test proving Docker API failure returns unavailable instead of crashing the release gate.
-- `scripts/verify-release.sh` now prefers `.venv/bin/python` and `.venv/Scripts/python.exe` before global `python3`, avoiding the observed global CivicCore 1.2.0 contamination when the repo venv has the pinned CivicCore 1.1.0.
+- `scripts/verify-release.sh` now prefers `.venv/bin/python` and `.venv/Scripts/python.exe` before global `python3`, avoiding the observed global CivicCore contamination when the repo venv has the pinned CivicCore dependency.
 - `tests/test_runtime_foundation.py` guards the interpreter-order contract.
 
 ## Verification

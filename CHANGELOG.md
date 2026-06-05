@@ -48,7 +48,7 @@ The format follows Keep a Changelog, and this project follows Semantic Versionin
 
 ### Changed
 
-- CivicCore dependency alignment moves to the published CivicCore `1.1.0` wheel.
+- CivicCore dependency alignment moves to the published CivicCore `1.2.0` wheel.
 - Staff workflow APIs now validate trusted municipal staff headers through the CivicCore trusted-proxy helper with loopback-only local defaults.
 - Updated runtime and documentation boundaries to describe the v1 product without claiming legal advice, official zoning determinations, or live external vendor calls by default.
 

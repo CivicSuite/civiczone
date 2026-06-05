@@ -67,7 +67,7 @@ Acceptance criteria:
 
 Acceptance criteria:
 - Version surfaces match `1.0.0`.
-- CivicCore compatibility is aligned to the published CivicCore v1.1.0 wheel.
+- CivicCore compatibility is aligned to the published CivicCore v1.2.0 wheel.
 - Resident UI runs live parcel lookup, cited Q&A, empty, error, and
   planner-review states.
 - Staff UI shell supports planner Q&A, ambiguity review, analytics, and

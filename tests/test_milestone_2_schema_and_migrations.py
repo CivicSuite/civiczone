@@ -47,7 +47,12 @@ def test_canonical_models_use_civiccore_base_and_schema() -> None:
     civiccore_db = importlib.import_module("civiccore.db")
 
     assert models.Base is civiccore_db.Base
-    assert sorted(models.Base.metadata.tables) == sorted(
+    civiczone_tables = {
+        table_name
+        for table_name in models.Base.metadata.tables
+        if table_name.startswith("civiczone.")
+    }
+    assert sorted(civiczone_tables) == sorted(
         f"civiczone.{table_name}" for table_name in CANONICAL_TABLES
     )
     for table_name in CANONICAL_TABLES:

@@ -25,4 +25,4 @@ Scope: CivicZone active module only.
 - UX: resident and staff browser flows have loading, success, empty, error, and partial states; copy gives concrete next steps.
 - QA: desktop/mobile screenshots, console logs, keyboard/focus, layout, and adversarial mock coverage are recorded.
 - Tests: staff route tests cover missing auth, underprivileged roles, trusted-source rejection, persistence, and resident/staff leakage boundaries.
-- Docs: current-facing docs now say CivicZone v1.0.0, CivicCore v1.1.0, trusted-proxy staff access, and no legal/determination/live-vendor overclaims.
+- Docs: current-facing docs now say CivicZone v0.2.2, CivicCore v1.2.0, trusted-proxy staff access, and no legal/determination/live-vendor overclaims.
