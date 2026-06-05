@@ -8,6 +8,8 @@ find_python() {
   if [[ -n "${CIVICZONE_RELEASE_PYTHON:-}" ]]; then
     candidates+=("${CIVICZONE_RELEASE_PYTHON}")
   fi
+  [[ -x ".venv/bin/python" ]] && candidates+=(".venv/bin/python")
+  [[ -x ".venv/Scripts/python.exe" ]] && candidates+=(".venv/Scripts/python.exe")
   command -v python3 >/dev/null 2>&1 && candidates+=("$(command -v python3)")
   command -v python >/dev/null 2>&1 && candidates+=("$(command -v python)")
   command -v py >/dev/null 2>&1 && candidates+=("py -3")

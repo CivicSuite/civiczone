@@ -56,10 +56,16 @@ def test_health_endpoint_reports_versions() -> None:
 def test_release_gate_prefers_native_unix_python_before_windows_launcher() -> None:
     script = (ROOT / "scripts" / "verify-release.sh").read_text(encoding="utf-8")
 
+    repo_windows_venv_probe = '.venv/Scripts/python.exe'
+    repo_unix_venv_probe = ".venv/bin/python"
     python3_probe = "command -v python3"
     python_probe = "command -v python)"
+    assert repo_windows_venv_probe in script
+    assert repo_unix_venv_probe in script
     assert python3_probe in script
     assert python_probe in script
+    assert script.index(repo_unix_venv_probe) < script.index(python3_probe)
+    assert script.index(repo_windows_venv_probe) < script.index(python3_probe)
     assert script.index(python3_probe) < script.index(python_probe)
 
 

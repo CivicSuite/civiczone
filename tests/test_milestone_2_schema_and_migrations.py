@@ -28,6 +28,20 @@ CANONICAL_TABLES = [
 ]
 
 
+def _docker_daemon_available() -> bool:
+    try:
+        completed = subprocess.run(
+            ["docker", "info"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return False
+    return completed.returncode == 0
+
+
 def test_canonical_models_use_civiccore_base_and_schema() -> None:
     models = importlib.import_module("civiczone.models")
     civiccore_db = importlib.import_module("civiccore.db")
@@ -112,7 +126,26 @@ def test_staff_workflows_migration_declares_runtime_tables() -> None:
     assert "postgresql.JSONB()" in migration_text
 
 
+def test_docker_daemon_probe_reports_unavailable_when_docker_api_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_run(*args: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(
+            args=["docker", "info"],
+            returncode=1,
+            stdout="",
+            stderr="failed to connect to the docker API",
+        )
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    assert _docker_daemon_available() is False
+
+
 def test_alembic_command_upgrades_real_pgvector_database(monkeypatch: pytest.MonkeyPatch) -> None:
+    if not _docker_daemon_available():
+        pytest.skip("Docker daemon is required for the pgvector migration integration test")
+
     name = f"civiczone-m2-{uuid.uuid4().hex[:12]}"
     subprocess.run(
         [
